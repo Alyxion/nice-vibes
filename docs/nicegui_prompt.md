@@ -11,7 +11,7 @@ ui.label('Hello World')
 ui.button('Click me', on_click=lambda: ui.notify('Clicked!'))
 
 if __name__ in {'__main__', '__mp_main__'}:
-    ui.run()
+    ui.run(show=False)
 ```
 
 ## Events
@@ -38,6 +38,8 @@ Essential patterns for building NiceGUI applications in the mechanics folder:
 | **Container Updates** | [container_updates.md](mechanics/container_updates.md) | Dynamic content with `clear()` + `with` |
 | **Event Binding** | [event_binding.md](mechanics/event_binding.md) | Constructor vs method, `on_value_change` |
 | **Binding & State** | [binding_and_state.md](mechanics/binding_and_state.md) | Data binding, refreshable UI |
+| **Data Modeling** | [data_modeling.md](mechanics/data_modeling.md) | Dataclasses, per-user storage, dashboards |
+| **Styling** | [styling.md](mechanics/styling.md) | `.classes()`, `.style()`, custom CSS |
 
 ## Class Reference by Category
 
@@ -72,7 +74,7 @@ def index():
         ui.label('Welcome!')
 
 if __name__ in {'__main__', '__mp_main__'}:
-    ui.run()
+    ui.run(show=False)
 ```
 
 ### Form with Validation
@@ -151,7 +153,7 @@ ui.label('Custom').style('color: red; font-size: 24px')
 
 ## Important Notes
 
-- Always wrap `ui.run()` with `if __name__ in {'__main__', '__mp_main__'}:`
+- Always use `ui.run(show=False)` with `if __name__ in {'__main__', '__mp_main__'}:`
 - Use `async` handlers for I/O operations
 - Wrap CPU-bound work with `run.cpu_bound()`
 - Use `.classes()` for Tailwind, `.props()` for Quasar, `.style()` for CSS

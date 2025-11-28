@@ -6,14 +6,18 @@ Rules and guardrails for AI agents generating NiceGUI code.
 
 ### Main Guard (Critical)
 
-Always wrap `ui.run()` with the multiprocessing guard:
+Always wrap `ui.run()` with the multiprocessing guard and use `show=False`:
 
 ```python
 if __name__ in {'__main__', '__mp_main__'}:
-    ui.run()
+    ui.run(show=False)
 ```
 
-**Why both checks?**
+**Why `show=False`?**
+- Prevents auto-opening browser on every restart
+- Better for development workflow
+
+**Why both `__main__` and `__mp_main__` checks?**
 - `__main__` - Normal script execution
 - `__mp_main__` - Multiprocessing spawn context (used on macOS/Windows)
 
@@ -154,3 +158,83 @@ After modifying class documentation:
 ```bash
 poetry run python scripts/generate_class_references.py
 ```
+
+## Data Modeling
+
+### Use Dataclasses or Pydantic
+
+Always use Python dataclasses or Pydantic models for data structures:
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class UserData:
+    name: str = ''
+    email: str = ''
+```
+
+### Never Use Global Variables
+
+NiceGUI serves concurrent users. Global variables are shared between ALL users:
+
+```python
+# BAD: All users share this!
+user_name = ''
+
+# GOOD: Per-user storage
+data = app.storage.client['user_data']
+```
+
+### Per-User Data Pattern
+
+Store user data in `app.storage.client` with a class method:
+
+```python
+@dataclass
+class UserData:
+    name: str = ''
+    
+    @classmethod
+    def get_current(cls) -> 'UserData':
+        if 'user_data' not in app.storage.client:
+            app.storage.client['user_data'] = cls()
+        return app.storage.client['user_data']
+```
+
+### Dashboard Data Binding
+
+For dashboards with computed values:
+1. Bind inputs to data model with `.bind_value()`
+2. Use `.on_value_change()` to trigger recomputation
+3. Bind outputs with `.bind_text_from()` for automatic updates
+
+```python
+ui.number('Quantity').bind_value(data, 'quantity').on_value_change(data.recompute)
+ui.label().bind_text_from(data, 'total', lambda t: f'Total: ${t:.2f}')
+```
+
+## Samples
+
+- Keep samples as **single files** for easy reference
+- Each sample should demonstrate specific patterns
+- Include comments explaining the patterns used
+- Always set a **title** in `ui.run(title='...')`
+
+## Master Prompt
+
+The master prompt (`output/nice_prompt.md`) is built from all documentation files.
+
+### Configuration
+
+Edit `docs/prompt_config.yaml` to control:
+- **File order** - Priority order for each section
+- **Exclusions** - Files to skip (e.g., `*_references.md`)
+
+### Building
+
+```bash
+poetry run python scripts/build_master_prompt.py
+```
+
+Reports token count and estimated cost.

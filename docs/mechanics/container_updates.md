@@ -34,7 +34,27 @@ ui.button('Update', on_click=update_content)
 
 ## Common Patterns
 
-### Dynamic List
+### Append Without Clearing
+
+To add elements without rebuilding the entire container, just enter the context:
+
+```python
+from nicegui import ui
+
+container = ui.column()
+
+def add_item():
+    # No clear() - just append to existing content
+    with container:
+        ui.label(f'Item {len(container)}')
+
+ui.button('Add Item', on_click=add_item)
+```
+
+### Clear and Rebuild
+
+To replace all content, use `clear()` first:
+
 ```python
 from nicegui import ui
 
@@ -127,7 +147,7 @@ ui.button('Add', on_click=add_item)
 
 ## Important Notes
 
-1. **Always clear before rebuilding** - Otherwise elements accumulate
+1. **Append vs Rebuild** - Use `with container:` alone to append, add `.clear()` to rebuild
 2. **Store container reference** - You need the reference to call `.clear()` and enter context
 3. **Context is required** - Elements created outside `with` go to the default parent
 4. **Refreshable is simpler** - Prefer `@ui.refreshable` when possible

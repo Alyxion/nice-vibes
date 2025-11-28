@@ -1,0 +1,38 @@
+# Configuration for building the master prompt
+# Files are included in the order listed here
+
+# Main guide (always first)
+main_guide: nicegui_prompt.md
+
+# Mechanics - core patterns in learning order
+mechanics:
+  - application_structure.md   # Setup first
+  - pages.md                   # Routing
+  - container_updates.md       # Dynamic content
+  - data_modeling.md           # Data patterns
+  - binding_and_state.md       # Binding
+  - event_binding.md           # Events
+  - styling.md                 # Styling last
+
+# Events - by frequency of use
+events:
+  - value_events.md            # Most common (inputs)
+  - button_events.md           # Clicks
+  - element_events.md          # Generic DOM
+  - lifecycle_events.md        # App lifecycle
+  - keyboard_events.md         # Keyboard
+  - upload_events.md           # File uploads
+
+# Classes - by importance/frequency
+classes:
+  - controls.md                # Most used: buttons, inputs
+  - layout.md                  # Containers, structure
+  - text_elements.md           # Labels, markdown
+  - data_elements.md           # Tables, charts
+  - audiovisual.md             # Images, video
+  - app_and_config.md          # App config, storage
+  - utilities.md               # Misc utilities
+
+# Files to exclude from master prompt
+exclude:
+  - "*_references.md"          # URL references not needed
