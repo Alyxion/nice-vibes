@@ -13,6 +13,7 @@ Uses docs/prompt_config.yaml to control file order and exclusions.
 """
 
 import argparse
+import re
 from fnmatch import fnmatch
 from pathlib import Path
 from dataclasses import dataclass, field
@@ -167,6 +168,38 @@ def collect_files_and_refs(variant: PromptVariant) -> tuple[list[Path], list[tup
     return files, excluded_refs
 
 
+def convert_relative_paths(content: str, file_path: Path, github_url: str, online: bool, root: Path) -> str:
+    """Convert relative markdown links to absolute paths.
+    
+    Converts links like [text](events/file.md) to absolute GitHub URLs or docs/ paths.
+    """
+    # Pattern matches markdown links: [text](relative/path.md)
+    # Excludes links starting with http, https, #, or /
+    pattern = r'\[([^\]]+)\]\((?!https?://|#|/)([^)]+\.md)\)'
+    
+    def replace_link(match: re.Match) -> str:
+        text = match.group(1)
+        relative_path = match.group(2)
+        
+        # Resolve the path relative to the file's directory
+        file_dir = file_path.parent
+        resolved = (file_dir / relative_path).resolve()
+        
+        # Get path relative to project root
+        try:
+            full_path = str(resolved.relative_to(root))
+        except ValueError:
+            # Fallback if resolution fails
+            full_path = f'docs/{relative_path}'
+        
+        if online:
+            return f'[{text}]({github_url}/blob/main/{full_path})'
+        else:
+            return f'[{text}]({full_path})'
+    
+    return re.sub(pattern, replace_link, content)
+
+
 def build_references_section(excluded_refs: list[tuple[str, str, str]], github_url: str, online: bool) -> str:
     """Build a section listing excluded content with references."""
     if not excluded_refs:
@@ -225,6 +258,9 @@ def build_master_prompt(files: list[Path], excluded_refs: list[tuple[str, str, s
         if content_hash in seen_content:
             continue
         seen_content.add(content_hash)
+        
+        # Convert relative paths in content to absolute
+        content = convert_relative_paths(content, file_path, github_url, online, root)
         
         # Add section separator with source reference
         relative_path = file_path.relative_to(root)

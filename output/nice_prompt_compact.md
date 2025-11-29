@@ -31,12 +31,12 @@ Event handling documentation in the events folder:
 
 | Topic | File | Description |
 |-------|------|-------------|
-| **Element Events** | [element_events.md](events/element_events.md) | Base `.on()` handler, DOM events |
-| **Value Events** | [value_events.md](events/value_events.md) | `on_change` for inputs, selects, etc. |
-| **Button Events** | [button_events.md](events/button_events.md) | `on_click` for buttons |
-| **Keyboard Events** | [keyboard_events.md](events/keyboard_events.md) | Global keyboard handling |
-| **Lifecycle Events** | [lifecycle_events.md](events/lifecycle_events.md) | App/client lifecycle hooks |
-| **Upload Events** | [upload_events.md](events/upload_events.md) | File upload handling |
+| **Element Events** | [element_events.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/events/element_events.md) | Base `.on()` handler, DOM events |
+| **Value Events** | [value_events.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/events/value_events.md) | `on_change` for inputs, selects, etc. |
+| **Button Events** | [button_events.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/events/button_events.md) | `on_click` for buttons |
+| **Keyboard Events** | [keyboard_events.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/events/keyboard_events.md) | Global keyboard handling |
+| **Lifecycle Events** | [lifecycle_events.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/events/lifecycle_events.md) | App/client lifecycle hooks |
+| **Upload Events** | [upload_events.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/events/upload_events.md) | File upload handling |
 
 ## Core Mechanics
 
@@ -44,13 +44,13 @@ Essential patterns for building NiceGUI applications in the mechanics folder:
 
 | Topic | File | Description |
 |-------|------|-------------|
-| **Application Structure** | [application_structure.md](mechanics/application_structure.md) | Project setup, `ui.run()`, main guard |
-| **Pages & Routing** | [pages.md](mechanics/pages.md) | `@ui.page`, URL parameters, navigation |
-| **Container Updates** | [container_updates.md](mechanics/container_updates.md) | Dynamic content with `clear()` + `with` |
-| **Event Binding** | [event_binding.md](mechanics/event_binding.md) | Constructor vs method, `on_value_change` |
-| **Binding & State** | [binding_and_state.md](mechanics/binding_and_state.md) | Data binding, refreshable UI |
-| **Data Modeling** | [data_modeling.md](mechanics/data_modeling.md) | Dataclasses, per-user storage, dashboards |
-| **Styling** | [styling.md](mechanics/styling.md) | `.classes()`, `.style()`, custom CSS |
+| **Application Structure** | [application_structure.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/application_structure.md) | Project setup, `ui.run()`, main guard |
+| **Pages & Routing** | [pages.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/pages.md) | `@ui.page`, URL parameters, navigation |
+| **Container Updates** | [container_updates.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/container_updates.md) | Dynamic content with `clear()` + `with` |
+| **Event Binding** | [event_binding.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/event_binding.md) | Constructor vs method, `on_value_change` |
+| **Binding & State** | [binding_and_state.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/binding_and_state.md) | Data binding, refreshable UI |
+| **Data Modeling** | [data_modeling.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/data_modeling.md) | Dataclasses, per-user storage, dashboards |
+| **Styling** | [styling.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/styling.md) | `.classes()`, `.style()`, custom CSS |
 
 ## Class Reference by Category
 
@@ -58,13 +58,13 @@ Find detailed documentation for each category in the classes folder:
 
 | Category | File | Description |
 |----------|------|-------------|
-| **Text Elements** | [text_elements.md](classes/text_elements.md) | Labels, links, markdown, HTML |
-| **Controls** | [controls.md](classes/controls.md) | Buttons, inputs, selects, sliders |
-| **Audiovisual** | [audiovisual.md](classes/audiovisual.md) | Images, audio, video, icons |
-| **Data Elements** | [data_elements.md](classes/data_elements.md) | Tables, charts, 3D scenes, maps |
-| **Layout** | [layout.md](classes/layout.md) | Containers, navigation, dialogs |
-| **App & Config** | [app_and_config.md](classes/app_and_config.md) | Storage, lifecycle, routing |
-| **Utilities** | [utilities.md](classes/utilities.md) | Background tasks, testing, HTML |
+| **Text Elements** | [text_elements.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/text_elements.md) | Labels, links, markdown, HTML |
+| **Controls** | [controls.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/controls.md) | Buttons, inputs, selects, sliders |
+| **Audiovisual** | [audiovisual.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/audiovisual.md) | Images, audio, video, icons |
+| **Data Elements** | [data_elements.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/data_elements.md) | Tables, charts, 3D scenes, maps |
+| **Layout** | [layout.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/layout.md) | Containers, navigation, dialogs |
+| **App & Config** | [app_and_config.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/app_and_config.md) | Storage, lifecycle, routing |
+| **Utilities** | [utilities.md](https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/utilities.md) | Background tasks, testing, HTML |
 
 ## Common Patterns
 
