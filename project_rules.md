@@ -1,229 +1,70 @@
-# NiceGUI Project Rules & Guidelines
+# Nice Prompt - Project Rules
 
-Rules and guardrails for AI agents generating NiceGUI code.
+Rules for AI agents (like Cascade) working on this repository.
 
-## Application Structure
+This file is **not** part of the master prompt. It governs how to maintain and extend the documentation and samples in this project.
 
-### Main Guard (Critical)
+---
 
-Always wrap `ui.run()` with the multiprocessing guard and use `show=False`:
+## Project Overview
 
-```python
-if __name__ in {'__main__', '__mp_main__'}:
-    ui.run(show=False)
-```
+This repository contains documentation and examples to help AI agents generate correct NiceGUI code. The main output is `output/nice_prompt.md` - a single file containing all documentation for context injection.
 
-**Why `show=False`?**
-- Prevents auto-opening browser on every restart
-- Better for development workflow
-
-**Why both `__main__` and `__mp_main__` checks?**
-- `__main__` - Normal script execution
-- `__mp_main__` - Multiprocessing spawn context (used on macOS/Windows)
-
-Without this guard:
-- Worker processes would start their own servers
-- Importing the module would start the server
-- Test frameworks would trigger `ui.run()`
-- Hot reload would create duplicate servers
-
-## Container Updates
-
-To update the content of a NiceGUI container element:
-
-1. Call the container's `.clear()` method
-2. Enter its context via `with`
-3. Create new elements inside the context
-
-```python
-container = ui.column()
-
-def update_content():
-    container.clear()
-    with container:
-        ui.label('New content!')
-```
-
-**Alternative**: Use `@ui.refreshable` for simpler cases:
-
-```python
-@ui.refreshable
-def content():
-    ui.label('Content')
-
-content()
-content.refresh()  # Rebuilds automatically
-```
-
-## Pages
-
-- Use `@ui.page('/path')` decorator to define routes
-- Each page function builds UI when visited
-- Elements created outside `@ui.page` go to the auto-index page at `/`
-
-```python
-@ui.page('/')
-def index():
-    ui.label('Home')
-
-@ui.page('/about')
-def about():
-    ui.label('About')
-```
-
-## Project Structure
-
-Recommended layout for larger applications:
+## File Organization
 
 ```
-my_app/
-├── main.py              # Entry point with ui.run()
-├── pages/
-│   ├── __init__.py
-│   ├── home.py          # @ui.page('/') 
-│   └── about.py         # @ui.page('/about')
-├── components/
-│   ├── __init__.py
-│   └── header.py        # Reusable components
-├── static/              # Static files
-└── pyproject.toml
-```
+docs/
+├── nicegui_prompt.md       # Main guide (always first in master prompt)
+├── mechanics/              # Core patterns (application structure, pages, etc.)
+├── events/                 # Event handling documentation
+├── classes/                # UI element reference by category
+│   ├── *.md                # Class docs (included in master prompt)
+│   └── *_references.md     # Source URLs (excluded from master prompt)
+└── prompt_config.yaml      # Controls master prompt build order
 
-## Documentation References
-
-- [NiceGUI Prompt Guide](docs/nicegui_prompt.md) - Main AI agent guide
-- [Mechanics](docs/mechanics/) - Core patterns
-- [Class Reference](docs/classes/) - All UI elements with examples
-- [Class References](docs/classes/*_references.md) - Source code & doc URLs
-
-## Validation
-
-Run validation before committing:
-
-```bash
-# Validate class references (fast)
-poetry run python scripts/validate_classes.py
-
-# Also check URLs (slower)
-poetry run python scripts/validate_classes.py --check-urls
-
-# Retry failed URLs only
-poetry run python scripts/validate_classes.py --retry-failed
+samples/                    # Working example applications
+scripts/                    # Build and validation tools
+output/                     # Generated master prompt
 ```
 
 ## Maintenance Rules
 
-### Keep README.md Up to Date
+### When Adding Documentation
 
-Always update `README.md` when:
-- Adding new files or directories
-- Changing project structure
-- Adding new scripts or tools
-- Modifying documentation organization
+1. Add new files to the appropriate `docs/` subdirectory
+2. Update `docs/prompt_config.yaml` to include the file in the correct order
+3. Rebuild the master prompt: `poetry run python scripts/build_master_prompt.py`
 
-The README should accurately reflect the current project structure at all times.
+### When Modifying Class References
 
-### Keep nicegui_prompt.md Up to Date
+1. Edit the class file in `docs/classes/`
+2. Regenerate reference files: `poetry run python scripts/generate_class_references.py`
+3. Validate: `poetry run python scripts/validate_classes.py`
 
-Always update `docs/nicegui_prompt.md` when:
-- Adding new documentation folders (events, mechanics, etc.)
-- Documenting new patterns or mechanics
-- Adding important rules or gotchas
-- Changing key concepts
-
-The prompt guide is the main entry point for AI agents and must reflect all major changes.
-
-### Class Reference Files
-
-Each class category file (e.g., `controls.md`) has a corresponding `*_references.md` file with:
-- **Description** - What the class does (visible at first glance)
-- **Inherits** - Base class chain (essential for event handling)
-- **Source** - Link to GitHub source code
-- **Documentation** - Link to nicegui.io docs
-
-#### Important Base Classes
-
-Track these base classes in the Inherits column:
-- `ui.element` - Base for all UI elements
-- `ValueElement` - Elements with `.value` property and `on_change` event
-- `DisableableElement` - Elements that can be disabled
-- `ContentElement` - Elements with text/HTML content
-- `SourceElement` - Elements with source (images, audio, video)
-- `ChoiceElement` - Selection elements (radio, select, toggle)
-- `ValidationElement` - Input elements with validation
-
-#### Regenerate References
-
-After modifying class documentation:
-```bash
-poetry run python scripts/generate_class_references.py
-```
-
-## Data Modeling
-
-### Use Dataclasses or Pydantic
-
-Always use Python dataclasses or Pydantic models for data structures:
-
-```python
-from dataclasses import dataclass
-
-@dataclass
-class UserData:
-    name: str = ''
-    email: str = ''
-```
-
-### Never Use Global Variables
-
-NiceGUI serves concurrent users. Global variables are shared between ALL users:
-
-```python
-# BAD: All users share this!
-user_name = ''
-
-# GOOD: Per-user storage
-data = app.storage.client['user_data']
-```
-
-### Per-User Data Pattern
-
-Store user data in `app.storage.client` with a class method:
-
-```python
-@dataclass
-class UserData:
-    name: str = ''
-    
-    @classmethod
-    def get_current(cls) -> 'UserData':
-        if 'user_data' not in app.storage.client:
-            app.storage.client['user_data'] = cls()
-        return app.storage.client['user_data']
-```
-
-### Dashboard Data Binding
-
-For dashboards with computed values:
-1. Bind inputs to data model with `.bind_value()`
-2. Use `.on_value_change()` to trigger recomputation
-3. Bind outputs with `.bind_text_from()` for automatic updates
-
-```python
-ui.number('Quantity').bind_value(data, 'quantity').on_value_change(data.recompute)
-ui.label().bind_text_from(data, 'total', lambda t: f'Total: ${t:.2f}')
-```
-
-## Samples
+### When Adding Samples
 
 - Keep samples as **single files** for easy reference
 - Each sample should demonstrate specific patterns
 - Include comments explaining the patterns used
-- Always set a **title** in `ui.run(title='...')`
+- Always use `ui.run(show=False, title='...')` in the main guard
 
-## Master Prompt
+### Keep README.md Current
 
-The master prompt (`output/nice_prompt.md`) is built from all documentation files.
+Update `README.md` when:
+- Adding new files or directories
+- Changing project structure
+- Adding new scripts or tools
+
+### Keep nicegui_prompt.md Current
+
+Update `docs/nicegui_prompt.md` when:
+- Adding new documentation sections
+- Documenting new patterns or mechanics
+- Adding important rules or gotchas
+
+## Master Prompt Build
+
+The master prompt is built from all documentation files in the order specified by `docs/prompt_config.yaml`.
 
 ### Configuration
 
@@ -237,4 +78,73 @@ Edit `docs/prompt_config.yaml` to control:
 poetry run python scripts/build_master_prompt.py
 ```
 
-Reports token count and estimated cost.
+Options:
+- `--github-url URL` - Set GitHub URL for source links (default: https://github.com/Alyxion/nice-prompt)
+
+## Validation
+
+Run before committing:
+
+```bash
+# Validate class references
+poetry run python scripts/validate_classes.py
+
+# Also check URLs
+poetry run python scripts/validate_classes.py --check-urls
+```
+
+## Class Reference Structure
+
+Each class category file has a corresponding `*_references.md` with:
+- **Description** - What the class does
+- **Inherits** - Base class chain (important for event handling)
+- **Source** - Link to GitHub source code
+- **Documentation** - Link to nicegui.io docs
+
+### Important Base Classes
+
+Track these in the Inherits column:
+- `ui.element` - Base for all UI elements
+- `ValueElement` - Elements with `.value` and `on_change`
+- `DisableableElement` - Elements that can be disabled
+- `ContentElement` - Elements with text/HTML content
+- `SourceElement` - Elements with source (images, audio, video)
+- `ChoiceElement` - Selection elements (radio, select, toggle)
+- `ValidationElement` - Input elements with validation
+
+## NiceGUI Code Conventions
+
+When writing samples or examples, follow these patterns:
+
+### Main Guard
+
+```python
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run(show=False, title='My App')
+```
+
+### Per-User Data
+
+Never use global variables. Use `app.storage.client`:
+
+```python
+@dataclass
+class UserData:
+    name: str = ''
+    
+    @classmethod
+    def get_current(cls) -> 'UserData':
+        if 'user_data' not in app.storage.client:
+            app.storage.client['user_data'] = cls()
+        return app.storage.client['user_data']
+```
+
+### Container Updates
+
+```python
+container.clear()
+with container:
+    ui.label('New content')
+```
+
+Or use `@ui.refreshable` for simpler cases.

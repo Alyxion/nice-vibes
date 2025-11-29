@@ -2,12 +2,10 @@
 
 Complete reference for AI agents building NiceGUI applications.
 
-Source: https://github.com/Alyxion/nice-prompt
-
 ---
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/nice-prompt/docs/nicegui_prompt.md -->
+<!-- Source: nice-prompt/docs/nicegui_prompt.md -->
 
 # NiceGUI Development Guide for AI Agents
 
@@ -184,7 +182,7 @@ Check the `*_references.md` files for base class info:
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/application_structure.md -->
+<!-- Source: docs/mechanics/application_structure.md -->
 
 # NiceGUI Application Structure
 
@@ -420,7 +418,7 @@ if __name__ in {'__main__', '__mp_main__'}:
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/pages.md -->
+<!-- Source: docs/mechanics/pages.md -->
 
 # Pages and Routing in NiceGUI
 
@@ -607,7 +605,7 @@ async def data_page():
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/container_updates.md -->
+<!-- Source: docs/mechanics/container_updates.md -->
 
 # Updating Container Content in NiceGUI
 
@@ -765,7 +763,7 @@ ui.button('Add', on_click=add_item)
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/data_modeling.md -->
+<!-- Source: docs/mechanics/data_modeling.md -->
 
 # Data Modeling in NiceGUI
 
@@ -960,7 +958,7 @@ if __name__ in {'__main__', '__mp_main__'}:
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/binding_and_state.md -->
+<!-- Source: docs/mechanics/binding_and_state.md -->
 
 # NiceGUI Binding & State Management
 
@@ -1163,7 +1161,7 @@ data_changed.emit('new value')
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/event_binding.md -->
+<!-- Source: docs/mechanics/event_binding.md -->
 
 # Event Binding in NiceGUI
 
@@ -1255,7 +1253,7 @@ label.on('mouseleave', lambda: ui.notify('Left!'))
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/styling.md -->
+<!-- Source: docs/mechanics/styling.md -->
 
 # Styling in NiceGUI
 
@@ -1483,7 +1481,7 @@ ui.label('Adaptive').classes('text-black dark:text-white bg-white dark:bg-gray-8
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/events/value_events.md -->
+<!-- Source: docs/events/value_events.md -->
 
 # Value Events (ValueElement)
 
@@ -1608,7 +1606,7 @@ preview()
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/events/button_events.md -->
+<!-- Source: docs/events/button_events.md -->
 
 # Button Events
 
@@ -1712,7 +1710,7 @@ ui.button('Go Home', on_click=lambda: ui.navigate.to('/'))
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/events/element_events.md -->
+<!-- Source: docs/events/element_events.md -->
 
 # Element Events (ui.element)
 
@@ -1802,7 +1800,7 @@ button.on_click(handle_click)
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/events/lifecycle_events.md -->
+<!-- Source: docs/events/lifecycle_events.md -->
 
 # Lifecycle Events
 
@@ -1934,7 +1932,7 @@ async def index():
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/events/keyboard_events.md -->
+<!-- Source: docs/events/keyboard_events.md -->
 
 # Keyboard Events
 
@@ -2056,7 +2054,7 @@ ui.keyboard(on_key=navigate)
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/events/upload_events.md -->
+<!-- Source: docs/events/upload_events.md -->
 
 # Upload Events
 
@@ -2190,7 +2188,7 @@ ui.upload(on_upload=save_file)
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/controls.md -->
+<!-- Source: docs/classes/controls.md -->
 
 # NiceGUI Controls
 
@@ -2295,7 +2293,7 @@ ui.codemirror('print("Hello")', language='python')
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/layout.md -->
+<!-- Source: docs/classes/layout.md -->
 
 # NiceGUI Layout Elements
 
@@ -2479,7 +2477,7 @@ ui.button('Hover me').tooltip('This is a tooltip')
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/text_elements.md -->
+<!-- Source: docs/classes/text_elements.md -->
 
 # NiceGUI Text Elements
 
@@ -2546,7 +2544,7 @@ ui.mermaid('''
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/data_elements.md -->
+<!-- Source: docs/classes/data_elements.md -->
 
 # NiceGUI Data Elements
 
@@ -2664,7 +2662,7 @@ ui.json_editor({'key': 'value', 'list': [1, 2, 3]})
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/audiovisual.md -->
+<!-- Source: docs/classes/audiovisual.md -->
 
 # NiceGUI Audiovisual Elements
 
@@ -2727,7 +2725,7 @@ ui.avatar('https://example.com/photo.jpg')
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/app_and_config.md -->
+<!-- Source: docs/classes/app_and_config.md -->
 
 # NiceGUI App & Configuration
 
@@ -2940,7 +2938,7 @@ ui.run(
 
 
 
-<!-- Source: https://github.com/Alyxion/nice-prompt/blob/main/docs/classes/utilities.md -->
+<!-- Source: docs/classes/utilities.md -->
 
 # NiceGUI Utilities
 
@@ -3104,6 +3102,6 @@ The following documentation is not included in this prompt but available for ref
 
 ### Advanced Mechanics
 
-- **custom_components.md** (`https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/custom_components.md`): Custom JS/Vue components: creating Python+JS elements, props, events, run_method(), Vue lifecycle hooks (mounted/unmounted), ESM modules, resource loading
-- **configuration_deployment.md** (`https://github.com/Alyxion/nice-prompt/blob/main/docs/mechanics/configuration_deployment.md`): ui.run() parameters, favicon options, Docker deployment, PyInstaller packaging, SSL/HTTPS, native window mode, NiceGUI On Air
+- **custom_components.md** (`docs/mechanics/custom_components.md`): Custom JS/Vue components: creating Python+JS elements, props, events, run_method(), Vue lifecycle hooks (mounted/unmounted), ESM modules, resource loading
+- **configuration_deployment.md** (`docs/mechanics/configuration_deployment.md`): ui.run() parameters, favicon options, Docker deployment, PyInstaller packaging, SSL/HTTPS, native window mode, NiceGUI On Air
 

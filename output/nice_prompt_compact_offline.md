@@ -1,0 +1,1514 @@
+# NiceGUI Master Prompt
+
+Complete reference for AI agents building NiceGUI applications.
+
+---
+
+
+<!-- Source: nice-prompt/docs/nicegui_prompt.md -->
+
+# NiceGUI Development Guide for AI Agents
+
+This document helps AI coding agents build NiceGUI applications correctly.
+
+## Quick Start
+
+```python
+from nicegui import ui
+
+ui.label('Hello World')
+ui.button('Click me', on_click=lambda: ui.notify('Clicked!'))
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run(show=False)
+```
+
+## Events
+
+Event handling documentation in the events folder:
+
+| Topic | File | Description |
+|-------|------|-------------|
+| **Element Events** | [element_events.md](events/element_events.md) | Base `.on()` handler, DOM events |
+| **Value Events** | [value_events.md](events/value_events.md) | `on_change` for inputs, selects, etc. |
+| **Button Events** | [button_events.md](events/button_events.md) | `on_click` for buttons |
+| **Keyboard Events** | [keyboard_events.md](events/keyboard_events.md) | Global keyboard handling |
+| **Lifecycle Events** | [lifecycle_events.md](events/lifecycle_events.md) | App/client lifecycle hooks |
+| **Upload Events** | [upload_events.md](events/upload_events.md) | File upload handling |
+
+## Core Mechanics
+
+Essential patterns for building NiceGUI applications in the mechanics folder:
+
+| Topic | File | Description |
+|-------|------|-------------|
+| **Application Structure** | [application_structure.md](mechanics/application_structure.md) | Project setup, `ui.run()`, main guard |
+| **Pages & Routing** | [pages.md](mechanics/pages.md) | `@ui.page`, URL parameters, navigation |
+| **Container Updates** | [container_updates.md](mechanics/container_updates.md) | Dynamic content with `clear()` + `with` |
+| **Event Binding** | [event_binding.md](mechanics/event_binding.md) | Constructor vs method, `on_value_change` |
+| **Binding & State** | [binding_and_state.md](mechanics/binding_and_state.md) | Data binding, refreshable UI |
+| **Data Modeling** | [data_modeling.md](mechanics/data_modeling.md) | Dataclasses, per-user storage, dashboards |
+| **Styling** | [styling.md](mechanics/styling.md) | `.classes()`, `.style()`, custom CSS |
+
+## Class Reference by Category
+
+Find detailed documentation for each category in the classes folder:
+
+| Category | File | Description |
+|----------|------|-------------|
+| **Text Elements** | [text_elements.md](classes/text_elements.md) | Labels, links, markdown, HTML |
+| **Controls** | [controls.md](classes/controls.md) | Buttons, inputs, selects, sliders |
+| **Audiovisual** | [audiovisual.md](classes/audiovisual.md) | Images, audio, video, icons |
+| **Data Elements** | [data_elements.md](classes/data_elements.md) | Tables, charts, 3D scenes, maps |
+| **Layout** | [layout.md](classes/layout.md) | Containers, navigation, dialogs |
+| **App & Config** | [app_and_config.md](classes/app_and_config.md) | Storage, lifecycle, routing |
+| **Utilities** | [utilities.md](classes/utilities.md) | Background tasks, testing, HTML |
+
+## Common Patterns
+
+### Page with Layout
+```python
+from nicegui import ui
+
+@ui.page('/')
+def index():
+    with ui.header():
+        ui.label('My App').classes('text-xl')
+    
+    with ui.left_drawer():
+        ui.link('Home', '/')
+        ui.link('About', '/about')
+    
+    with ui.column().classes('p-4'):
+        ui.label('Welcome!')
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run(show=False)
+```
+
+### Form with Validation
+```python
+from nicegui import ui
+
+name = ui.input('Name', validation={'Required': lambda v: bool(v)})
+email = ui.input('Email', validation={'Invalid': lambda v: '@' in v})
+ui.button('Submit', on_click=lambda: ui.notify(f'Hello {name.value}'))
+```
+
+### Data Binding
+```python
+from nicegui import ui
+
+class Model:
+    text = ''
+
+model = Model()
+ui.input('Type here').bind_value(model, 'text')
+ui.label().bind_text_from(model, 'text', lambda t: f'You typed: {t}')
+```
+
+### Refreshable Content
+```python
+from nicegui import ui
+
+items = []
+
+@ui.refreshable
+def show_items():
+    for item in items:
+        ui.label(item)
+
+show_items()
+ui.input('New item', on_change=lambda e: (items.append(e.value), show_items.refresh()))
+```
+
+### Async Operations
+```python
+from nicegui import ui, run
+
+async def fetch_data():
+    data = await run.io_bound(slow_api_call)
+    ui.notify(f'Got: {data}')
+
+ui.button('Fetch', on_click=fetch_data)
+```
+
+## Styling
+
+NiceGUI uses **Tailwind CSS** and **Quasar** for styling:
+
+```python
+# Tailwind classes
+ui.label('Styled').classes('text-2xl font-bold text-blue-500 bg-gray-100 p-4 rounded')
+
+# Quasar props
+ui.button('Outlined').props('outlined')
+ui.input('Dense').props('dense filled')
+
+# Inline CSS
+ui.label('Custom').style('color: red; font-size: 24px')
+```
+
+## Key Concepts
+
+1. **Main Guard**: Always use `if __name__ in {'__main__', '__mp_main__'}:` before `ui.run()`
+2. **Context Managers**: Use `with` to nest elements inside containers
+3. **Container Updates**: Call `.clear()` then enter context with `with` to rebuild content
+4. **Event Binding**: Constructor (`on_change=`) vs method (`.on_value_change()`) - names differ!
+5. **Binding**: Connect UI to data with `.bind_value()`, `.bind_text_from()`
+6. **Refreshable**: Use `@ui.refreshable` for dynamic content that rebuilds
+7. **Pages**: Define routes with `@ui.page('/path')`
+8. **Storage**: Persist data with `app.storage.user`, `app.storage.general`
+
+## Important Notes
+
+- Always use `ui.run(show=False)` with `if __name__ in {'__main__', '__mp_main__'}:`
+- Use `async` handlers for I/O operations
+- Wrap CPU-bound work with `run.cpu_bound()`
+- Use `.classes()` for Tailwind, `.props()` for Quasar, `.style()` for CSS
+- Event method names differ from constructor: `on_change` → `.on_value_change()`
+
+## Inheritance Matters
+
+Check the `*_references.md` files for base class info:
+- **ValueElement**: Has `.value` property and `on_change`/`.on_value_change()`
+- **DisableableElement**: Can be disabled with `.disable()`/`.enable()`
+- **ValidationElement**: Supports `validation` parameter
+- **ChoiceElement**: Selection elements (radio, select, toggle)
+
+---
+
+*This prompt should be updated when major documentation changes are made (new folders, new mechanics, new patterns).*
+
+
+
+<!-- Source: docs/mechanics/application_structure.md -->
+
+# NiceGUI Application Structure
+
+## Minimal Application
+
+```python
+from nicegui import ui
+
+ui.label('Hello World')
+
+ui.run()
+```
+
+## Production Application Structure
+
+**Critical**: Always wrap `ui.run()` in the multiprocessing guard for production:
+
+```python
+from nicegui import ui
+
+@ui.page('/')
+def index():
+    ui.label('Hello World')
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run()
+```
+
+### Why This Guard?
+
+- **`__main__`** - Normal script execution
+- **`__mp_main__`** - Multiprocessing spawn context (used on macOS/Windows)
+
+Without the guard:
+1. **Multiprocessing** - Worker processes would start their own servers
+2. **Import safety** - Importing your module would start the server
+3. **Testing** - Test frameworks would trigger `ui.run()`
+4. **Reload mode** - Hot reload would create duplicate servers
+
+## Recommended Project Structure
+
+```
+my_app/
+├── main.py              # Entry point with ui.run()
+├── pages/
+│   ├── __init__.py
+│   ├── home.py          # @ui.page('/') 
+│   ├── about.py         # @ui.page('/about')
+│   └── dashboard.py     # @ui.page('/dashboard')
+├── components/
+│   ├── __init__.py
+│   ├── header.py        # Reusable header component
+│   └── sidebar.py       # Reusable sidebar
+├── static/              # Static files (images, CSS)
+├── requirements.txt
+└── pyproject.toml
+```
+
+### main.py
+```python
+from nicegui import app, ui
+
+# Import pages to register routes
+from pages import home, about, dashboard
+
+# Serve static files
+app.add_static_files('/static', 'static')
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run(
+        title='My App',
+        port=8080,
+    )
+```
+
+### pages/home.py
+```python
+from nicegui import ui
+from components.header import create_header
+
+@ui.page('/')
+def home():
+    create_header()
+    ui.label('Welcome!')
+```
+
+### components/header.py
+```python
+from nicegui import ui
+
+def create_header():
+    with ui.header().classes('bg-blue-500'):
+        ui.label('My App').classes('text-xl text-white')
+        with ui.row():
+            ui.link('Home', '/').classes('text-white')
+            ui.link('About', '/about').classes('text-white')
+```
+
+## ui.run() Options
+
+```python
+ui.run(
+    # Server
+    host='0.0.0.0',          # Bind address (default: '127.0.0.1')
+    port=8080,               # Port (default: 8080)
+    
+    # Display
+    title='My App',          # Browser tab title
+    dark=None,               # Dark mode: True, False, or None (auto)
+    
+    # Development
+    reload=True,             # Hot reload on file changes
+    show=True,               # Open browser on start
+    
+    # Native mode
+    native=False,            # Run in native window
+    window_size=(800, 600),  # Native window size
+    
+    # Storage
+    storage_secret='secret', # Secret for signed storage
+)
+```
+
+## Lifecycle Hooks
+
+```python
+from nicegui import app, ui
+
+@app.on_startup
+async def startup():
+    """Called once when app starts"""
+    print('App starting...')
+    # Initialize database, load config, etc.
+
+@app.on_shutdown  
+async def shutdown():
+    """Called once when app stops"""
+    print('App shutting down...')
+    # Cleanup resources
+
+@app.on_connect
+async def connect():
+    """Called when each client connects"""
+    print('Client connected')
+
+@app.on_disconnect
+async def disconnect():
+    """Called when each client disconnects"""
+    print('Client disconnected')
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run()
+```
+
+## Integration with FastAPI
+
+For existing FastAPI applications:
+
+```python
+from fastapi import FastAPI
+from nicegui import ui
+
+app = FastAPI()
+
+@app.get('/api/data')
+def get_data():
+    return {'value': 42}
+
+@ui.page('/')
+def index():
+    ui.label('NiceGUI + FastAPI')
+
+ui.run_with(app)  # Attach to existing FastAPI app
+```
+
+## Environment-Based Configuration
+
+```python
+import os
+from nicegui import ui
+
+DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
+
+@ui.page('/')
+def index():
+    ui.label('My App')
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run(
+        host='0.0.0.0' if not DEBUG else '127.0.0.1',
+        port=int(os.getenv('PORT', 8080)),
+        reload=DEBUG,
+        show=DEBUG,
+    )
+```
+
+## Common Mistakes
+
+### ❌ Missing main guard
+```python
+from nicegui import ui
+
+ui.label('Hello')
+ui.run()  # Will cause issues with multiprocessing/reload
+```
+
+### ✅ With main guard
+```python
+from nicegui import ui
+
+ui.label('Hello')
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run()
+```
+
+### ❌ Code after ui.run()
+```python
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run()
+    print('This never executes!')  # ui.run() blocks
+```
+
+### ✅ Use lifecycle hooks instead
+```python
+@app.on_startup
+async def init():
+    print('This runs at startup')
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run()
+```
+
+
+
+<!-- Source: docs/mechanics/pages.md -->
+
+# Pages and Routing in NiceGUI
+
+## Basic Page Definition
+
+Use the `@ui.page` decorator to define routes:
+
+```python
+from nicegui import ui
+
+@ui.page('/')
+def index():
+    ui.label('Home Page')
+
+@ui.page('/about')
+def about():
+    ui.label('About Page')
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run()
+```
+
+## How Pages Work
+
+1. **Decorator registers route** - `@ui.page('/path')` registers the function as a route handler
+2. **Function builds UI** - When a user visits the path, the function executes
+3. **Fresh instance per visit** - Each page visit creates a new UI instance
+4. **Elements auto-attach** - UI elements created in the function become page content
+
+## URL Parameters
+
+### Path Parameters
+```python
+@ui.page('/user/{user_id}')
+def user_page(user_id: str):
+    ui.label(f'User ID: {user_id}')
+
+@ui.page('/item/{item_id}/detail/{detail_id}')
+def item_detail(item_id: int, detail_id: int):
+    ui.label(f'Item {item_id}, Detail {detail_id}')
+```
+
+### Query Parameters
+```python
+from fastapi import Request
+
+@ui.page('/search')
+def search(request: Request):
+    query = request.query_params.get('q', '')
+    ui.label(f'Searching for: {query}')
+    # URL: /search?q=hello
+```
+
+## Page Options
+
+```python
+@ui.page(
+    '/dashboard',
+    title='Dashboard',           # Browser tab title
+    dark=True,                   # Dark mode
+    response_timeout=30.0,       # Timeout in seconds
+)
+def dashboard():
+    ui.label('Dashboard')
+```
+
+## Shared vs Per-Client State
+
+### Per-Client (Default)
+Each visitor gets their own UI instance:
+
+```python
+@ui.page('/')
+def index():
+    counter = 0  # Each visitor has their own counter
+    
+    def increment():
+        nonlocal counter
+        counter += 1
+        label.text = str(counter)
+    
+    label = ui.label('0')
+    ui.button('+', on_click=increment)
+```
+
+### Shared State
+Use module-level or `app.storage.general` for shared data:
+
+```python
+from nicegui import app, ui
+
+# Module-level shared state
+shared_counter = {'value': 0}
+
+@ui.page('/')
+def index():
+    def increment():
+        shared_counter['value'] += 1
+        label.text = str(shared_counter['value'])
+    
+    label = ui.label(str(shared_counter['value']))
+    ui.button('+', on_click=increment)
+```
+
+## Auto-Index Page
+
+Elements created outside `@ui.page` go to the auto-index page at `/`:
+
+```python
+from nicegui import ui
+
+# This creates content on the root page
+ui.label('Hello')  # Visible at /
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run()
+```
+
+This is equivalent to:
+
+```python
+@ui.page('/')
+def index():
+    ui.label('Hello')
+```
+
+## Navigation Between Pages
+
+```python
+from nicegui import ui
+
+@ui.page('/')
+def index():
+    ui.link('Go to About', '/about')
+    ui.button('Navigate', on_click=lambda: ui.navigate.to('/about'))
+
+@ui.page('/about')
+def about():
+    ui.link('Back to Home', '/')
+    ui.button('Go Back', on_click=ui.navigate.back)
+```
+
+## Page Layout Pattern
+
+```python
+from nicegui import ui
+
+def create_layout():
+    """Shared layout for all pages"""
+    with ui.header():
+        ui.label('My App').classes('text-xl')
+        ui.link('Home', '/')
+        ui.link('About', '/about')
+
+@ui.page('/')
+def index():
+    create_layout()
+    ui.label('Welcome to the home page')
+
+@ui.page('/about')
+def about():
+    create_layout()
+    ui.label('About us')
+```
+
+## Async Pages
+
+Pages can be async for I/O operations:
+
+```python
+@ui.page('/data')
+async def data_page():
+    ui.spinner()
+    data = await fetch_data_from_api()
+    ui.label(f'Data: {data}')
+```
+
+## Important Notes
+
+1. **One function per route** - Each path needs its own decorated function
+2. **Function runs on each visit** - Don't put expensive setup in page functions
+3. **Elements are scoped** - UI elements belong to the page/client that created them
+4. **Use storage for persistence** - `app.storage.user` persists across page visits
+
+
+
+<!-- Source: docs/mechanics/container_updates.md -->
+
+# Updating Container Content in NiceGUI
+
+## The Problem
+
+NiceGUI elements are created once and rendered to the client. To dynamically update the content of a container, you cannot simply reassign children—you must clear and rebuild.
+
+## The Pattern
+
+To update a container's content:
+
+1. Call `.clear()` to remove all children
+2. Enter the container's context with `with`
+3. Create new elements inside the context
+
+```python
+from nicegui import ui
+
+container = ui.column()
+
+def update_content():
+    container.clear()
+    with container:
+        ui.label('New content!')
+        ui.button('Another button')
+
+ui.button('Update', on_click=update_content)
+```
+
+## Why This Works
+
+- `container.clear()` removes all child elements from the DOM
+- `with container:` sets the container as the current parent context
+- Any `ui.*` calls inside the `with` block create elements as children of that container
+
+## Common Patterns
+
+### Append Without Clearing
+
+To add elements without rebuilding the entire container, just enter the context:
+
+```python
+from nicegui import ui
+
+container = ui.column()
+
+def add_item():
+    # No clear() - just append to existing content
+    with container:
+        ui.label(f'Item {len(container)}')
+
+ui.button('Add Item', on_click=add_item)
+```
+
+### Clear and Rebuild
+
+To replace all content, use `clear()` first:
+
+```python
+from nicegui import ui
+
+items = []
+item_list = ui.column()
+
+def refresh_list():
+    item_list.clear()
+    with item_list:
+        for item in items:
+            ui.label(item)
+
+def add_item():
+    items.append(f'Item {len(items) + 1}')
+    refresh_list()
+
+ui.button('Add Item', on_click=add_item)
+refresh_list()
+```
+
+### Conditional Content
+```python
+from nicegui import ui
+
+content = ui.column()
+show_details = False
+
+def toggle_details():
+    global show_details
+    show_details = not show_details
+    content.clear()
+    with content:
+        ui.label('Title')
+        if show_details:
+            ui.label('Detailed information here...')
+
+ui.button('Toggle Details', on_click=toggle_details)
+toggle_details()
+```
+
+### Loading State
+```python
+from nicegui import ui
+
+container = ui.column()
+
+async def load_data():
+    container.clear()
+    with container:
+        ui.spinner()
+    
+    # Simulate async loading
+    data = await fetch_data()
+    
+    container.clear()
+    with container:
+        for item in data:
+            ui.label(item)
+```
+
+## Alternative: @ui.refreshable
+
+For simpler cases, use the `@ui.refreshable` decorator:
+
+```python
+from nicegui import ui
+
+items = ['A', 'B', 'C']
+
+@ui.refreshable
+def item_list():
+    for item in items:
+        ui.label(item)
+
+item_list()
+
+def add_item():
+    items.append('New')
+    item_list.refresh()  # Automatically clears and rebuilds
+
+ui.button('Add', on_click=add_item)
+```
+
+### When to Use Each
+
+| Approach | Use When |
+|----------|----------|
+| `clear()` + `with` | Fine-grained control, partial updates |
+| `@ui.refreshable` | Entire section needs rebuilding |
+
+## Important Notes
+
+1. **Append vs Rebuild** - Use `with container:` alone to append, add `.clear()` to rebuild
+2. **Store container reference** - You need the reference to call `.clear()` and enter context
+3. **Context is required** - Elements created outside `with` go to the default parent
+4. **Refreshable is simpler** - Prefer `@ui.refreshable` when possible
+
+
+
+<!-- Source: docs/mechanics/data_modeling.md -->
+
+# Data Modeling in NiceGUI
+
+Best practices for managing user data in NiceGUI applications.
+
+## Core Principles
+
+1. **Use dataclasses or Pydantic** for data structures
+2. **Never use global variables** - NiceGUI serves concurrent users
+3. **Group user data in a class** instead of scattered variables
+4. **Store per-user data in `app.storage.client`**
+
+## User Data Class Pattern
+
+```python
+from dataclasses import dataclass, field
+from nicegui import app, ui
+
+
+@dataclass
+class UserData:
+    """Per-user application state."""
+    name: str = ''
+    email: str = ''
+    items: list[str] = field(default_factory=list)
+    
+    @classmethod
+    def get_current(cls) -> 'UserData':
+        """Get or create UserData for the current user."""
+        if 'user_data' not in app.storage.client:
+            app.storage.client['user_data'] = cls()
+        return app.storage.client['user_data']
+```
+
+## Usage in Pages
+
+```python
+@ui.page('/')
+def index():
+    data = UserData.get_current()
+    
+    ui.input('Name').bind_value(data, 'name')
+    ui.input('Email').bind_value(data, 'email')
+```
+
+## With Pydantic
+
+```python
+from pydantic import BaseModel, Field
+from nicegui import app, ui
+
+
+class UserData(BaseModel):
+    """Per-user application state with validation."""
+    name: str = ''
+    email: str = ''
+    age: int = 0
+    
+    class Config:
+        # Allow mutation for binding
+        frozen = False
+    
+    @classmethod
+    def get_current(cls) -> 'UserData':
+        """Get or create UserData for the current user."""
+        if 'user_data' not in app.storage.client:
+            app.storage.client['user_data'] = cls()
+        return app.storage.client['user_data']
+```
+
+## Dashboard with Computed Values
+
+For dashboards where inputs affect computed results:
+
+```python
+from dataclasses import dataclass
+from nicegui import app, ui
+
+
+@dataclass
+class DashboardData:
+    quantity: int = 0
+    unit_price: float = 0.0
+    total: float = 0.0  # Computed field
+    
+    def compute_total(self):
+        """Recompute derived values."""
+        self.total = self.quantity * self.unit_price
+    
+    @classmethod
+    def get_current(cls) -> 'DashboardData':
+        if 'dashboard' not in app.storage.client:
+            app.storage.client['dashboard'] = cls()
+        return app.storage.client['dashboard']
+
+
+@ui.page('/dashboard')
+def dashboard():
+    data = DashboardData.get_current()
+    
+    def on_input_change(e):
+        data.compute_total()
+    
+    # Inputs bound to data, trigger recomputation on change
+    ui.number('Quantity', min=0).bind_value(data, 'quantity').on_value_change(on_input_change)
+    ui.number('Unit Price', min=0, format='%.2f').bind_value(data, 'unit_price').on_value_change(on_input_change)
+    
+    # Result automatically updates via bind_text_from
+    ui.label().bind_text_from(data, 'total', lambda t: f'Total: ${t:.2f}')
+```
+
+## Why Not Global Variables?
+
+```python
+# BAD: Global state shared between all users!
+user_name = ''
+user_items = []
+
+@ui.page('/')
+def index():
+    global user_name  # All users see/modify the same data!
+    ui.input('Name').bind_value(globals(), 'user_name')
+
+
+# GOOD: Per-user state via app.storage.client
+@ui.page('/')
+def index():
+    data = UserData.get_current()  # Each user gets their own instance
+    ui.input('Name').bind_value(data, 'name')
+```
+
+## Storage Scopes
+
+| Storage | Scope | Use Case |
+|---------|-------|----------|
+| `app.storage.client` | Per browser tab | User session data |
+| `app.storage.user` | Per authenticated user | Persistent user preferences |
+| `app.storage.general` | Shared across all users | App-wide settings |
+
+## Complete Example
+
+```python
+from dataclasses import dataclass, field
+from nicegui import app, ui
+
+
+@dataclass
+class OrderData:
+    customer_name: str = ''
+    items: list[dict] = field(default_factory=list)
+    discount_percent: float = 0.0
+    subtotal: float = 0.0
+    total: float = 0.0
+    
+    def add_item(self, name: str, price: float):
+        self.items.append({'name': name, 'price': price})
+        self.recompute()
+    
+    def recompute(self):
+        self.subtotal = sum(item['price'] for item in self.items)
+        self.total = self.subtotal * (1 - self.discount_percent / 100)
+    
+    @classmethod
+    def get_current(cls) -> 'OrderData':
+        if 'order' not in app.storage.client:
+            app.storage.client['order'] = cls()
+        return app.storage.client['order']
+
+
+@ui.page('/')
+def index():
+    order = OrderData.get_current()
+    
+    ui.input('Customer').bind_value(order, 'customer_name')
+    
+    ui.number('Discount %', min=0, max=100).bind_value(
+        order, 'discount_percent'
+    ).on_value_change(lambda: order.recompute())
+    
+    ui.label().bind_text_from(order, 'subtotal', lambda v: f'Subtotal: ${v:.2f}')
+    ui.label().bind_text_from(order, 'total', lambda v: f'Total: ${v:.2f}')
+
+
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run(storage_secret='your-secret-key')  # Required for storage
+```
+
+## Documentation
+
+- [Storage](https://nicegui.io/documentation/storage)
+- [Data Binding](https://nicegui.io/documentation/section_binding_properties)
+
+
+
+<!-- Source: docs/mechanics/binding_and_state.md -->
+
+# NiceGUI Binding & State Management
+
+Reactive data binding and state management patterns.
+
+## UI Patterns
+
+| Function | Description |
+|----------|-------------|
+| `ui.refreshable` | Decorator for refreshable UI sections |
+| `ui.refreshable_method` | Refreshable method decorator |
+| `ui.state(initial)` | Reactive state for refreshable UI |
+| `ui.context` | Get current UI context |
+
+## Binding Module
+
+| Class/Function | Description |
+|----------------|-------------|
+| `binding.BindableProperty` | Bindable property descriptor |
+| `binding.bindable_dataclass()` | Create bindable dataclass |
+| `binding.bind(source, target)` | Two-way binding |
+| `binding.bind_from(source, target)` | One-way (source → target) |
+| `binding.bind_to(source, target)` | One-way (target → source) |
+
+## Element Binding Methods
+
+Every UI element supports these binding methods:
+
+| Method | Description |
+|--------|-------------|
+| `.bind_value(obj, 'attr')` | Two-way bind value |
+| `.bind_value_from(obj, 'attr')` | One-way bind value from |
+| `.bind_value_to(obj, 'attr')` | One-way bind value to |
+| `.bind_text(obj, 'attr')` | Two-way bind text |
+| `.bind_text_from(obj, 'attr')` | One-way bind text from |
+| `.bind_visibility(obj, 'attr')` | Bind visibility |
+| `.bind_visibility_from(obj, 'attr')` | One-way bind visibility |
+
+## Examples
+
+### Basic Binding
+```python
+from nicegui import ui
+
+class Model:
+    name = ''
+    show_greeting = True
+
+model = Model()
+
+ui.input('Name').bind_value(model, 'name')
+ui.label().bind_text_from(model, 'name', lambda n: f'Hello, {n}!')
+ui.label('Greeting').bind_visibility_from(model, 'show_greeting')
+ui.checkbox('Show greeting').bind_value(model, 'show_greeting')
+```
+
+### Binding to Dictionary
+```python
+data = {'count': 0}
+
+ui.number('Count').bind_value(data, 'count')
+ui.label().bind_text_from(data, 'count')
+```
+
+### Refreshable UI
+```python
+from nicegui import ui
+
+@ui.refreshable
+def user_list():
+    for user in users:
+        ui.label(user)
+
+users = ['Alice', 'Bob']
+user_list()
+
+def add_user():
+    users.append('Charlie')
+    user_list.refresh()
+
+ui.button('Add User', on_click=add_user)
+```
+
+### Refreshable with State
+```python
+from nicegui import ui
+
+@ui.refreshable
+def counter():
+    count, set_count = ui.state(0)
+    ui.label(f'Count: {count}')
+    ui.button('+', on_click=lambda: set_count(count + 1))
+
+counter()
+```
+
+### Bindable Property
+```python
+from nicegui import ui
+from nicegui import binding
+
+class Counter:
+    value = binding.BindableProperty()
+    
+    def __init__(self):
+        self.value = 0
+
+counter = Counter()
+ui.slider(min=0, max=100).bind_value(counter, 'value')
+ui.label().bind_text_from(counter, 'value')
+```
+
+### Bindable Dataclass
+```python
+from nicegui import ui
+from nicegui.binding import bindable_dataclass
+
+@bindable_dataclass
+class Settings:
+    volume: int = 50
+    muted: bool = False
+
+settings = Settings()
+ui.slider(min=0, max=100).bind_value(settings, 'volume')
+ui.switch('Muted').bind_value(settings, 'muted')
+```
+
+### Transformation Functions
+```python
+# Transform value when binding
+ui.label().bind_text_from(
+    model, 'price',
+    backward=lambda p: f'${p:.2f}'
+)
+
+# Two-way with transforms
+ui.input().bind_value(
+    model, 'value',
+    forward=lambda v: v.upper(),  # UI → model
+    backward=lambda v: v.lower()  # model → UI
+)
+```
+
+---
+
+## Observables Module
+
+Observable collections that notify on changes.
+
+| Class | Description |
+|-------|-------------|
+| `ObservableCollection` | Base class |
+| `ObservableDict` | Observable dictionary |
+| `ObservableList` | Observable list |
+| `ObservableSet` | Observable set |
+
+### Example
+```python
+from nicegui.observables import ObservableList
+
+items = ObservableList(['a', 'b', 'c'])
+
+@ui.refreshable
+def show_items():
+    for item in items:
+        ui.label(item)
+
+show_items()
+
+# Changes trigger UI update when bound
+items.append('d')
+```
+
+---
+
+## Event Module
+
+Custom events for component communication.
+
+| Method | Description |
+|--------|-------------|
+| `Event()` | Create event |
+| `event.subscribe(callback)` | Subscribe to event |
+| `event.emit(*args)` | Fire event (async) |
+| `event.call(*args)` | Fire and await callbacks |
+
+### Example
+```python
+from nicegui import Event
+
+data_changed = Event()
+
+@data_changed.subscribe
+async def on_change(value):
+    ui.notify(f'Data changed: {value}')
+
+# Emit event
+data_changed.emit('new value')
+```
+
+
+
+<!-- Source: docs/mechanics/event_binding.md -->
+
+# Event Binding in NiceGUI
+
+NiceGUI supports two ways to attach event handlers: constructor parameters and methods.
+
+## Two Ways to Bind Events
+
+### 1. Constructor Parameter
+
+Pass the handler directly when creating the element:
+
+```python
+ui.button('Click', on_click=lambda: ui.notify('Clicked!'))
+ui.input('Name', on_change=lambda e: print(e.value))
+```
+
+### 2. Method Call
+
+Attach the handler after creation using a method:
+
+```python
+button = ui.button('Click')
+button.on_click(lambda: ui.notify('Clicked!'))
+
+input_field = ui.input('Name')
+input_field.on_value_change(lambda e: print(e.value))
+```
+
+## Important: Method Names Differ from Constructor Parameters
+
+**The method name is NOT always the same as the constructor parameter!**
+
+| Element | Constructor Parameter | Method |
+|---------|----------------------|--------|
+| Button | `on_click` | `.on_click()` |
+| ValueElement | `on_change` | `.on_value_change()` |
+| Upload | `on_upload` | `.on_upload()` |
+
+### ValueElement Example
+
+```python
+# Constructor: on_change
+ui.input('Name', on_change=handler)
+
+# Method: on_value_change (NOT on_change!)
+input_field = ui.input('Name')
+input_field.on_value_change(handler)
+```
+
+## When to Use Each
+
+### Constructor (Preferred for Simple Cases)
+```python
+# Clean, concise for single handler
+ui.button('Save', on_click=save_data)
+ui.input('Search', on_change=do_search)
+```
+
+### Method (For Complex Cases)
+```python
+# Multiple handlers
+button = ui.button('Click')
+button.on_click(log_click)
+button.on_click(update_ui)
+
+# Conditional binding
+input_field = ui.input('Name')
+if validate_mode:
+    input_field.on_value_change(validate)
+
+# Chaining with other methods
+ui.input('Name').classes('w-full').on_value_change(handler)
+```
+
+## Generic Event Binding
+
+For DOM events, use `.on()`:
+
+```python
+# Constructor style not available for DOM events
+label = ui.label('Hover me')
+label.on('mouseenter', lambda: ui.notify('Hovered!'))
+label.on('mouseleave', lambda: ui.notify('Left!'))
+```
+
+## Documentation
+
+- [Generic Events](https://nicegui.io/documentation/generic_events)
+
+
+
+<!-- Source: docs/mechanics/styling.md -->
+
+# Styling in NiceGUI
+
+NiceGUI provides multiple ways to style elements: Tailwind CSS classes, inline styles, Quasar props, and custom CSS.
+
+## .classes() - Tailwind CSS
+
+Apply Tailwind CSS utility classes to any element:
+
+```python
+from nicegui import ui
+
+# Text styling
+ui.label('Title').classes('text-2xl font-bold text-blue-600')
+
+# Spacing and layout
+ui.card().classes('p-4 m-2 w-full max-w-md')
+
+# Flexbox
+ui.row().classes('gap-4 justify-between items-center')
+
+# Background and borders
+ui.label('Alert').classes('bg-red-100 border border-red-400 rounded p-2')
+
+# Responsive design
+ui.label('Responsive').classes('text-sm md:text-base lg:text-xl')
+```
+
+### Common Tailwind Classes
+
+| Category | Examples |
+|----------|----------|
+| **Text** | `text-xl`, `font-bold`, `text-gray-500`, `text-center` |
+| **Spacing** | `p-4`, `m-2`, `px-6`, `mt-4`, `gap-2` |
+| **Width/Height** | `w-full`, `w-80`, `max-w-md`, `h-screen` |
+| **Flexbox** | `flex`, `justify-between`, `items-center`, `gap-4` |
+| **Background** | `bg-white`, `bg-gray-100`, `bg-blue-500` |
+| **Border** | `border`, `rounded`, `rounded-lg`, `border-gray-300` |
+
+## .style() - Inline CSS
+
+Apply inline CSS for specific styling needs:
+
+```python
+from nicegui import ui
+
+# Direct CSS properties
+ui.label('Custom').style('color: red; font-size: 24px')
+
+# Complex styling
+ui.label('Gradient').style('''
+    background: linear-gradient(90deg, #ff0000, #0000ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+''')
+
+# Dynamic styling
+size = 20
+ui.label('Dynamic').style(f'font-size: {size}px')
+```
+
+### When to Use .style()
+
+- CSS properties not available in Tailwind
+- Gradients, transforms, animations
+- Dynamic values computed at runtime
+- Vendor-specific prefixes
+
+## .props() - Quasar Properties
+
+NiceGUI uses Quasar components. Use `.props()` for Quasar-specific styling:
+
+```python
+from nicegui import ui
+
+# Button variants
+ui.button('Outlined').props('outlined')
+ui.button('Flat').props('flat')
+ui.button('Round').props('round')
+
+# Input styling
+ui.input('Dense').props('dense filled')
+ui.input('Outlined').props('outlined')
+
+# Colors (Quasar color palette)
+ui.button('Primary').props('color=primary')
+ui.button('Negative').props('color=negative')
+
+# Icons
+ui.button(icon='home').props('flat round')
+```
+
+## ui.add_head_html() - Custom CSS
+
+Add custom CSS rules to the page `<head>`:
+
+```python
+from nicegui import ui
+
+# Add custom CSS
+ui.add_head_html('''
+<style>
+    .my-custom-class {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+    }
+    
+    .highlight:hover {
+        transform: scale(1.05);
+        transition: transform 0.2s;
+    }
+</style>
+''')
+
+# Use the custom class
+ui.label('Custom Styled').classes('my-custom-class')
+ui.card().classes('highlight')
+```
+
+### Global Styles
+
+```python
+from nicegui import ui
+
+ui.add_head_html('''
+<style>
+    /* Override default styles */
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+</style>
+''')
+```
+
+### Loading External Fonts
+
+```python
+from nicegui import ui
+
+ui.add_head_html('''
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+    body { font-family: 'Inter', sans-serif; }
+</style>
+''')
+```
+
+## ui.add_css() - Simpler CSS Addition
+
+For just CSS (no full HTML), use `ui.add_css()`:
+
+```python
+from nicegui import ui
+
+ui.add_css('''
+    .card-hover:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+''')
+```
+
+## Combining Approaches
+
+```python
+from nicegui import ui
+
+# Custom CSS for complex effects
+ui.add_head_html('''
+<style>
+    .gradient-border {
+        border: 3px solid transparent;
+        background: linear-gradient(white, white) padding-box,
+                    linear-gradient(135deg, #667eea, #764ba2) border-box;
+    }
+</style>
+''')
+
+# Combine Tailwind + custom class + inline style
+ui.card().classes('p-4 rounded-lg gradient-border').style('min-width: 300px')
+```
+
+## Dark Mode
+
+```python
+from nicegui import ui
+
+# Enable dark mode
+ui.dark_mode().enable()
+
+# Or toggle
+dark = ui.dark_mode()
+ui.button('Toggle Dark', on_click=dark.toggle)
+
+# Tailwind dark: prefix works automatically
+ui.label('Adaptive').classes('text-black dark:text-white bg-white dark:bg-gray-800')
+```
+
+## Summary
+
+| Method | Use Case |
+|--------|----------|
+| `.classes()` | Tailwind utilities, most common styling |
+| `.style()` | Inline CSS, dynamic values, complex CSS |
+| `.props()` | Quasar component properties |
+| `ui.add_head_html()` | Custom CSS rules, fonts, global styles |
+| `ui.add_css()` | Simple CSS additions |
+
+## Documentation
+
+- [Styling & Appearance](https://nicegui.io/documentation/section_styling_appearance)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Quasar Components](https://quasar.dev/vue-components)
+
+
+
+---
+
+## Additional Documentation
+
+The following documentation is not included in this prompt but available for reference:
+
+
+### Advanced Mechanics
+
+- **custom_components.md** (`docs/mechanics/custom_components.md`): Custom JS/Vue components: creating Python+JS elements, props, events, run_method(), Vue lifecycle hooks (mounted/unmounted), ESM modules, resource loading
+- **configuration_deployment.md** (`docs/mechanics/configuration_deployment.md`): ui.run() parameters, favicon options, Docker deployment, PyInstaller packaging, SSL/HTTPS, native window mode, NiceGUI On Air
+
+### Events
+
+- **value_events.md** (`docs/events/value_events.md`): on_change, on_value_change for inputs, selects, sliders; ValueChangeEventArguments
+- **button_events.md** (`docs/events/button_events.md`): on_click for buttons; ClickEventArguments
+- **element_events.md** (`docs/events/element_events.md`): Generic DOM events: on('click'), on('mouseover'), etc.
+- **lifecycle_events.md** (`docs/events/lifecycle_events.md`): app.on_startup, app.on_shutdown, app.on_connect, app.on_disconnect
+- **keyboard_events.md** (`docs/events/keyboard_events.md`): ui.keyboard for global key events; KeyEventArguments
+- **upload_events.md** (`docs/events/upload_events.md`): on_upload, on_rejected for file uploads; UploadEventArguments
+
+### Class Reference
+
+- **controls.md** (`docs/classes/controls.md`): ui.button, ui.input, ui.select, ui.checkbox, ui.switch, ui.slider, ui.toggle, ui.radio, ui.number, ui.textarea, ui.date, ui.time, ui.upload, ui.color_input
+- **layout.md** (`docs/classes/layout.md`): ui.row, ui.column, ui.card, ui.grid, ui.expansion, ui.tabs, ui.dialog, ui.menu, ui.splitter, ui.scroll_area, ui.header, ui.footer, ui.drawer
+- **text_elements.md** (`docs/classes/text_elements.md`): ui.label, ui.markdown, ui.html, ui.link, ui.badge, ui.chip, ui.tooltip, ui.notify
+- **data_elements.md** (`docs/classes/data_elements.md`): ui.table, ui.aggrid, ui.echart, ui.plotly, ui.highchart, ui.tree, ui.log, ui.json_editor, ui.code
+- **audiovisual.md** (`docs/classes/audiovisual.md`): ui.image, ui.interactive_image, ui.video, ui.audio, ui.icon, ui.avatar, ui.scene (3D), ui.leaflet (maps)
+- **app_and_config.md** (`docs/classes/app_and_config.md`): app.storage (browser/user/general), app.on_startup/shutdown, ui.run() config, ui.dark_mode, ui.colors
+- **utilities.md** (`docs/classes/utilities.md`): ui.timer, ui.keyboard, ui.download, ui.navigate, ui.run_javascript, ui.context, background_tasks
+

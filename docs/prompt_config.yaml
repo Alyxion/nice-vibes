@@ -6,32 +6,59 @@ main_guide: nicegui_prompt.md
 
 # Mechanics - core patterns in learning order
 mechanics:
-  - application_structure.md   # Setup first
-  - pages.md                   # Routing
-  - container_updates.md       # Dynamic content
-  - data_modeling.md           # Data patterns
-  - binding_and_state.md       # Binding
-  - event_binding.md           # Events
-  - styling.md                 # Styling last
+  - file: application_structure.md
+    summary: "App setup, ui.run(), @ui.page decorator, main.py structure, auto-index pages"
+  - file: pages.md
+    summary: "Routing with @ui.page, path parameters, query params, ui.navigate, ui.open, shared layouts"
+  - file: container_updates.md
+    summary: "Dynamic content: container.clear(), @ui.refreshable, container.refresh(), move/remove elements"
+  - file: data_modeling.md
+    summary: "Pydantic models, dataclasses, app.storage patterns, state management"
+  - file: binding_and_state.md
+    summary: "bind_value(), bind_visibility(), two-way binding, BindableProperty, reactive state"
+  - file: event_binding.md
+    summary: "Event handlers, async handlers, lambda callbacks, handle_event(), throttling"
+  - file: styling.md
+    summary: "Tailwind CSS classes, .classes(), .style(), .props(), dark mode, ui.colors"
 
-# Events - by frequency of use
+# Advanced mechanics - specialized topics (extended only)
+adv_mechanics:
+  - file: custom_components.md
+    summary: "Custom JS/Vue components: creating Python+JS elements, props, events, run_method(), Vue lifecycle hooks (mounted/unmounted), ESM modules, resource loading"
+  - file: configuration_deployment.md
+    summary: "ui.run() parameters, favicon options, Docker deployment, PyInstaller packaging, SSL/HTTPS, native window mode, NiceGUI On Air"
+
+# Events - by frequency of use (optimum and extended)
 events:
-  - value_events.md            # Most common (inputs)
-  - button_events.md           # Clicks
-  - element_events.md          # Generic DOM
-  - lifecycle_events.md        # App lifecycle
-  - keyboard_events.md         # Keyboard
-  - upload_events.md           # File uploads
+  - file: value_events.md
+    summary: "on_change, on_value_change for inputs, selects, sliders; ValueChangeEventArguments"
+  - file: button_events.md
+    summary: "on_click for buttons; ClickEventArguments"
+  - file: element_events.md
+    summary: "Generic DOM events: on('click'), on('mouseover'), etc."
+  - file: lifecycle_events.md
+    summary: "app.on_startup, app.on_shutdown, app.on_connect, app.on_disconnect"
+  - file: keyboard_events.md
+    summary: "ui.keyboard for global key events; KeyEventArguments"
+  - file: upload_events.md
+    summary: "on_upload, on_rejected for file uploads; UploadEventArguments"
 
-# Classes - by importance/frequency
+# Classes - by importance/frequency (optimum and extended)
 classes:
-  - controls.md                # Most used: buttons, inputs
-  - layout.md                  # Containers, structure
-  - text_elements.md           # Labels, markdown
-  - data_elements.md           # Tables, charts
-  - audiovisual.md             # Images, video
-  - app_and_config.md          # App config, storage
-  - utilities.md               # Misc utilities
+  - file: controls.md
+    summary: "ui.button, ui.input, ui.select, ui.checkbox, ui.switch, ui.slider, ui.toggle, ui.radio, ui.number, ui.textarea, ui.date, ui.time, ui.upload, ui.color_input"
+  - file: layout.md
+    summary: "ui.row, ui.column, ui.card, ui.grid, ui.expansion, ui.tabs, ui.dialog, ui.menu, ui.splitter, ui.scroll_area, ui.header, ui.footer, ui.drawer"
+  - file: text_elements.md
+    summary: "ui.label, ui.markdown, ui.html, ui.link, ui.badge, ui.chip, ui.tooltip, ui.notify"
+  - file: data_elements.md
+    summary: "ui.table, ui.aggrid, ui.echart, ui.plotly, ui.highchart, ui.tree, ui.log, ui.json_editor, ui.code"
+  - file: audiovisual.md
+    summary: "ui.image, ui.interactive_image, ui.video, ui.audio, ui.icon, ui.avatar, ui.scene (3D), ui.leaflet (maps)"
+  - file: app_and_config.md
+    summary: "app.storage (browser/user/general), app.on_startup/shutdown, ui.run() config, ui.dark_mode, ui.colors"
+  - file: utilities.md
+    summary: "ui.timer, ui.keyboard, ui.download, ui.navigate, ui.run_javascript, ui.context, background_tasks"
 
 # Files to exclude from master prompt
 exclude:

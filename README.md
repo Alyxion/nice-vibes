@@ -120,15 +120,38 @@ poetry run pytest -v
 
 ## 🤖 Build Master Prompt
 
-Generate a single markdown file with all documentation for AI context injection:
+Generate master prompt files for AI context injection:
 
 ```bash
 poetry run python scripts/build_master_prompt.py
 ```
 
-Output: `output/nice_prompt.md` (~18K tokens, ~$0.54 per GPT-4 prompt)
+### Prompt Variants
 
-Configure file order in `docs/prompt_config.yaml`.
+Each variant is generated in **online** and **offline** versions:
+- **Online**: References GitHub URLs for excluded docs
+- **Offline** (`*_offline.md`): References local file paths
+
+| Variant | Tokens | Use Case | Online | Offline |
+|---------|--------|----------|--------|---------|
+| Compact | ~9K | Quick tasks, simple UI | [nice_prompt_compact.md](output/nice_prompt_compact.md) | [nice_prompt_compact_offline.md](output/nice_prompt_compact_offline.md) |
+| Optimum | ~18K | Most use cases | [nice_prompt.md](output/nice_prompt.md) | [nice_prompt_offline.md](output/nice_prompt_offline.md) |
+| Extended | ~23K | Custom components, deployment | [nice_prompt_extended.md](output/nice_prompt_extended.md) | [nice_prompt_extended_offline.md](output/nice_prompt_extended_offline.md) |
+
+### What's Included
+
+| Content | Compact | Optimum | Extended |
+|---------|:-------:|:-------:|:--------:|
+| Main guide | ✓ | ✓ | ✓ |
+| Core mechanics | ✓ | ✓ | ✓ |
+| Events | ref | ✓ | ✓ |
+| Class reference | ref | ✓ | ✓ |
+| Custom components | ref | ref | ✓ |
+| Configuration & deployment | ref | ref | ✓ |
+
+**ref** = Not included but referenced with summary (AI knows where to look)
+
+Configure file order and summaries in `docs/prompt_config.yaml`.
 
 ## ✅ Validation
 

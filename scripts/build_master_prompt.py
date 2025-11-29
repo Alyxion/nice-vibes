@@ -1,19 +1,73 @@
 #!/usr/bin/env python3
-"""Build a single master prompt file from all documentation.
+"""Build master prompt files from all documentation.
 
-Concatenates all docs into output/nice_prompt.md and reports token count.
+Generates prompt variants in online and offline versions:
+- compact: Core mechanics only (smallest)
+- optimum: Core + events + classes (balanced)
+- extended: Everything including advanced topics (full)
+
+Online versions reference GitHub URLs for excluded content.
+Offline versions reference local file paths.
+
 Uses docs/prompt_config.yaml to control file order and exclusions.
 """
 
 import argparse
 from fnmatch import fnmatch
 from pathlib import Path
+from dataclasses import dataclass, field
 
 import tiktoken
 import yaml
 
 
 DEFAULT_GITHUB_URL = 'https://github.com/Alyxion/nice-prompt'
+
+
+@dataclass
+class PromptVariant:
+    """Configuration for a prompt variant."""
+    name: str
+    suffix: str
+    description: str
+    include_adv_mechanics: bool
+    include_events: bool
+    include_classes: bool
+
+
+@dataclass
+class FileEntry:
+    """A file entry with optional summary."""
+    filename: str
+    summary: str = ''
+
+
+VARIANTS = [
+    PromptVariant(
+        name='compact',
+        suffix='_compact',
+        description='Core mechanics only - minimal token usage',
+        include_adv_mechanics=False,
+        include_events=False,
+        include_classes=False,
+    ),
+    PromptVariant(
+        name='optimum',
+        suffix='',  # Default/main file
+        description='Core + events + classes - balanced coverage',
+        include_adv_mechanics=False,
+        include_events=True,
+        include_classes=True,
+    ),
+    PromptVariant(
+        name='extended',
+        suffix='_extended',
+        description='Full documentation including advanced topics',
+        include_adv_mechanics=True,
+        include_events=True,
+        include_classes=True,
+    ),
+]
 
 
 def load_config() -> dict:
@@ -28,6 +82,20 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
+def parse_file_entries(items: list) -> list[FileEntry]:
+    """Parse config items into FileEntry objects."""
+    entries = []
+    for item in items:
+        if isinstance(item, str):
+            entries.append(FileEntry(filename=item))
+        elif isinstance(item, dict):
+            entries.append(FileEntry(
+                filename=item.get('file', item.get('filename', '')),
+                summary=item.get('summary', '')
+            ))
+    return entries
+
+
 def should_exclude(filename: str, exclude_patterns: list[str]) -> bool:
     """Check if file matches any exclude pattern."""
     for pattern in exclude_patterns:
@@ -36,52 +104,115 @@ def should_exclude(filename: str, exclude_patterns: list[str]) -> bool:
     return False
 
 
-def collect_files() -> list[Path]:
-    """Collect all markdown files in configured order."""
+def collect_files_and_refs(variant: PromptVariant) -> tuple[list[Path], list[tuple[str, str, str]]]:
+    """Collect included files and references to excluded content.
+    
+    Returns:
+        Tuple of (included_files, excluded_refs) where excluded_refs is
+        list of (category, relative_path, summary) tuples.
+    """
     root = Path(__file__).parent.parent
     docs_dir = root / 'docs'
     config = load_config()
     
     files = []
+    excluded_refs = []
     exclude_patterns = config.get('exclude', [])
     
-    # Main guide first
+    # Main guide first (always included)
     main_guide = config.get('main_guide')
     if main_guide:
         files.append(docs_dir / main_guide)
     
-    # Mechanics
+    # Core mechanics (always included)
     mechanics_dir = docs_dir / 'mechanics'
-    for filename in config.get('mechanics', []):
-        path = mechanics_dir / filename
-        if path.exists() and not should_exclude(filename, exclude_patterns):
+    mechanics_entries = parse_file_entries(config.get('mechanics', []))
+    for entry in mechanics_entries:
+        path = mechanics_dir / entry.filename
+        if path.exists() and not should_exclude(entry.filename, exclude_patterns):
             files.append(path)
+    
+    # Advanced mechanics
+    adv_entries = parse_file_entries(config.get('adv_mechanics', []))
+    for entry in adv_entries:
+        path = mechanics_dir / entry.filename
+        if path.exists() and not should_exclude(entry.filename, exclude_patterns):
+            if variant.include_adv_mechanics:
+                files.append(path)
+            else:
+                excluded_refs.append(('Advanced Mechanics', f'docs/mechanics/{entry.filename}', entry.summary))
     
     # Events
     events_dir = docs_dir / 'events'
-    for filename in config.get('events', []):
-        path = events_dir / filename
-        if path.exists() and not should_exclude(filename, exclude_patterns):
-            files.append(path)
+    event_entries = parse_file_entries(config.get('events', []))
+    for entry in event_entries:
+        path = events_dir / entry.filename
+        if path.exists() and not should_exclude(entry.filename, exclude_patterns):
+            if variant.include_events:
+                files.append(path)
+            else:
+                excluded_refs.append(('Events', f'docs/events/{entry.filename}', entry.summary))
     
     # Classes
     classes_dir = docs_dir / 'classes'
-    for filename in config.get('classes', []):
-        path = classes_dir / filename
-        if path.exists() and not should_exclude(filename, exclude_patterns):
-            files.append(path)
+    class_entries = parse_file_entries(config.get('classes', []))
+    for entry in class_entries:
+        path = classes_dir / entry.filename
+        if path.exists() and not should_exclude(entry.filename, exclude_patterns):
+            if variant.include_classes:
+                files.append(path)
+            else:
+                excluded_refs.append(('Class Reference', f'docs/classes/{entry.filename}', entry.summary))
     
-    return files
+    return files, excluded_refs
 
 
-def build_master_prompt(files: list[Path], github_url: str) -> str:
+def build_references_section(excluded_refs: list[tuple[str, str, str]], github_url: str, online: bool) -> str:
+    """Build a section listing excluded content with references."""
+    if not excluded_refs:
+        return ''
+    
+    lines = [
+        '\n---\n',
+        '## Additional Documentation\n',
+        'The following documentation is not included in this prompt but available for reference:\n',
+    ]
+    
+    # Group by category
+    by_category: dict[str, list[tuple[str, str]]] = {}
+    for category, path, summary in excluded_refs:
+        if category not in by_category:
+            by_category[category] = []
+        by_category[category].append((path, summary))
+    
+    for category, items in by_category.items():
+        lines.append(f'\n### {category}\n')
+        for path, summary in items:
+            if online:
+                ref = f'{github_url}/blob/main/{path}'
+            else:
+                ref = path
+            
+            filename = path.split('/')[-1]
+            if summary:
+                lines.append(f'- **{filename}** (`{ref}`): {summary}')
+            else:
+                lines.append(f'- **{filename}** (`{ref}`)')
+    
+    lines.append('\n')
+    return '\n'.join(lines)
+
+
+def build_master_prompt(files: list[Path], excluded_refs: list[tuple[str, str, str]], 
+                        github_url: str, online: bool) -> str:
     """Build the master prompt from all files."""
     sections = []
     
     # Header
     sections.append('# NiceGUI Master Prompt\n')
     sections.append('Complete reference for AI agents building NiceGUI applications.\n')
-    sections.append(f'Source: {github_url}\n')
+    if online:
+        sections.append(f'Source: {github_url}\n')
     sections.append('---\n')
     
     seen_content = set()  # Track content hashes to avoid duplicates
@@ -95,12 +226,20 @@ def build_master_prompt(files: list[Path], github_url: str) -> str:
             continue
         seen_content.add(content_hash)
         
-        # Add section separator with GitHub URL
+        # Add section separator with source reference
         relative_path = file_path.relative_to(file_path.parent.parent.parent)
-        source_url = f'{github_url}/blob/main/{relative_path}'
-        sections.append(f'\n<!-- Source: {source_url} -->\n')
+        if online:
+            source_ref = f'{github_url}/blob/main/{relative_path}'
+        else:
+            source_ref = str(relative_path)
+        sections.append(f'\n<!-- Source: {source_ref} -->\n')
         sections.append(content)
         sections.append('\n')
+    
+    # Add references to excluded content
+    refs_section = build_references_section(excluded_refs, github_url, online)
+    if refs_section:
+        sections.append(refs_section)
     
     return '\n'.join(sections)
 
@@ -114,8 +253,33 @@ def count_tokens(text: str, model: str = 'gpt-4') -> int:
     return len(encoding.encode(text))
 
 
+def build_variant(variant: PromptVariant, github_url: str, output_dir: Path, online: bool) -> dict:
+    """Build a single prompt variant and return stats."""
+    files, excluded_refs = collect_files_and_refs(variant)
+    master_prompt = build_master_prompt(files, excluded_refs, github_url, online)
+    
+    # Determine filename based on online/offline
+    mode_suffix = '' if online else '_offline'
+    output_file = output_dir / f'nice_prompt{variant.suffix}{mode_suffix}.md'
+    output_file.write_text(master_prompt)
+    
+    token_count = count_tokens(master_prompt)
+    
+    return {
+        'name': variant.name,
+        'mode': 'online' if online else 'offline',
+        'file': output_file,
+        'files_count': len(files),
+        'refs_count': len(excluded_refs),
+        'chars': len(master_prompt),
+        'lines': master_prompt.count('\n'),
+        'tokens': token_count,
+        'description': variant.description,
+    }
+
+
 def main():
-    parser = argparse.ArgumentParser(description='Build master prompt from documentation.')
+    parser = argparse.ArgumentParser(description='Build master prompt variants from documentation.')
     parser.add_argument(
         '--github-url',
         default=DEFAULT_GITHUB_URL,
@@ -126,37 +290,42 @@ def main():
     root = Path(__file__).parent.parent
     output_dir = root / 'output'
     output_dir.mkdir(exist_ok=True)
-    output_file = output_dir / 'nice_prompt.md'
     
     print(f'GitHub URL: {args.github_url}')
-    print('Collecting documentation files...')
-    files = collect_files()
-    print(f'  Found {len(files)} files')
+    print('Building prompt variants (online + offline)...\n')
     
-    for f in files:
-        print(f'    - {f.relative_to(root)}')
+    results = []
+    for variant in VARIANTS:
+        print(f'[{variant.name}] {variant.description}')
+        
+        # Build online version
+        stats_online = build_variant(variant, args.github_url, output_dir, online=True)
+        results.append(stats_online)
+        print(f'  -> {stats_online["file"].name}: {stats_online["files_count"]} files, {stats_online["refs_count"]} refs, {stats_online["tokens"]:,} tokens')
+        
+        # Build offline version
+        stats_offline = build_variant(variant, args.github_url, output_dir, online=False)
+        results.append(stats_offline)
+        print(f'  -> {stats_offline["file"].name}: {stats_offline["files_count"]} files, {stats_offline["refs_count"]} refs, {stats_offline["tokens"]:,} tokens')
     
-    print('\nBuilding master prompt...')
-    master_prompt = build_master_prompt(files, args.github_url)
+    # Summary table
+    print('\n' + '=' * 80)
+    print('SUMMARY')
+    print('=' * 80)
+    print(f'{"Variant":<10} {"Mode":<8} {"Files":<6} {"Refs":<6} {"Tokens":<10} {"File"}')
+    print('-' * 80)
     
-    # Write output
-    output_file.write_text(master_prompt)
-    print(f'\nWritten to: {output_file}')
+    for stats in results:
+        print(f'{stats["name"]:<10} {stats["mode"]:<8} {stats["files_count"]:<6} {stats["refs_count"]:<6} {stats["tokens"]:<10,} {stats["file"].name}')
     
-    # Stats
-    char_count = len(master_prompt)
-    line_count = master_prompt.count('\n')
-    token_count = count_tokens(master_prompt)
-    
-    print(f'\n--- Statistics ---')
-    print(f'Characters: {char_count:,}')
-    print(f'Lines:      {line_count:,}')
-    print(f'Tokens:     {token_count:,} (GPT-4 encoding)')
-    
-    # Cost estimate (rough, based on GPT-4 input pricing)
-    cost_per_1k = 0.03  # $0.03 per 1K tokens for GPT-4
-    estimated_cost = (token_count / 1000) * cost_per_1k
-    print(f'Est. cost:  ${estimated_cost:.4f} per prompt (GPT-4 input)')
+    print('-' * 80)
+    print('\nVersions:')
+    print('  - online:  References GitHub URLs for excluded docs (for web-connected AI)')
+    print('  - offline: References local file paths (for local/IDE-integrated AI)')
+    print('\nRecommendations:')
+    print('  - compact:  Quick tasks, simple UI generation')
+    print('  - optimum:  Most use cases, good balance of context and coverage')
+    print('  - extended: Complex apps, custom components, deployment questions')
 
 
 if __name__ == '__main__':
