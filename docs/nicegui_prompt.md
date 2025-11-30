@@ -40,6 +40,10 @@ Essential patterns for building NiceGUI applications in the mechanics folder:
 | **Binding & State** | [binding_and_state.md](mechanics/binding_and_state.md) | Data binding, refreshable UI |
 | **Data Modeling** | [data_modeling.md](mechanics/data_modeling.md) | Dataclasses, per-user storage, dashboards |
 | **Styling** | [styling.md](mechanics/styling.md) | `.classes()`, `.style()`, custom CSS |
+| **Background Execution** | [background_execution.md](mechanics/background_execution.md) | `run.io_bound`, `background_tasks`, threading |
+| **Custom Components** | [custom_components.md](mechanics/custom_components.md) | Building Python/JS components |
+| **Three.js Integration** | [threejs_integration.md](mechanics/threejs_integration.md) | 3D rendering with Three.js |
+| **Coding Style** | [coding_style.md](mechanics/coding_style.md) | NiceGUI conventions, formatting, type hints |
 
 ## Class Reference by Category
 

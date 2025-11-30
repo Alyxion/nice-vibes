@@ -27,12 +27,16 @@ mechanics:
 
 # Advanced mechanics - specialized topics (extended only)
 adv_mechanics:
+  - file: background_execution.md
+    summary: "run.io_bound() for I/O and C++ libs (OpenCV, PIL, NumPy), run.cpu_bound() for pure Python, background_tasks.create(), ui.timer() polling, thread-safe state with locks"
   - file: custom_components.md
     summary: "Custom JS/Vue components: creating Python+JS elements, props, events, run_method(), Vue lifecycle hooks (mounted/unmounted), ESM modules, resource loading"
   - file: threejs_integration.md
     summary: "Custom Three.js scenes using nicegui-scene module, WeakMap pattern to avoid Vue reactivity conflicts, custom GLSL shaders, OrbitControls, particle systems"
   - file: configuration_deployment.md
     summary: "ui.run() parameters, favicon options, Docker deployment, PyInstaller packaging, SSL/HTTPS, native window mode, NiceGUI On Air"
+  - file: coding_style.md
+    summary: "NiceGUI coding conventions: single quotes, ~120 char lines, type hints with Self/Optional, Sphinx docstrings, mixin composition, WeakRef patterns"
 
 # Events - by frequency of use (optimum and extended)
 events:
@@ -88,6 +92,15 @@ samples:
       Three.js particle tornado with custom GLSL shaders using NiceGUI's bundled Three.js.
       Demonstrates: Element subclass with nicegui-scene module, WeakMap for Vue reactivity
       workaround, custom vertex/fragment shaders, OrbitControls, real-time parameter updates.
+      But most importantly: How to visualize 3D scenes in NiceGUI.
+
+  - name: video_custom_component
+    path: samples/video_custom_component/
+    summary: |
+      Custom JavaScript/Vue component with real-time video processing.
+      Demonstrates: Element subclass with component='*.js', run_method(), run.io_bound(),
+      background_tasks.create(), ui.timer() for async polling, 16 OpenCV filters,
+      thread-safe state sharing, event-driven frame requests, base64 JPEG transfer.
 
   - name: multi_dashboard
     path: samples/multi_dashboard/
@@ -104,13 +117,6 @@ samples:
       Stock comparison dashboard with async data loading.
       Demonstrates: dark mode, run.io_bound() for API calls, ui.echart(),
       ui.chip() for toggles, ui.timer() for initial load, custom CSS.
-
-  - name: bouncing_circle
-    path: samples/bouncing_circle/
-    summary: |
-      Custom JavaScript/Vue component with server-side PIL rendering.
-      Demonstrates: Element subclass with component='*.js', run_method(),
-      event-driven frame requests, base64 image transfer, Vue lifecycle hooks.
 
   - name: sub_pages_demo
     path: samples/sub_pages_demo/

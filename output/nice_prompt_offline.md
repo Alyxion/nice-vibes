@@ -49,6 +49,10 @@ Essential patterns for building NiceGUI applications in the mechanics folder:
 | **Binding & State** | [binding_and_state.md](docs/mechanics/binding_and_state.md) | Data binding, refreshable UI |
 | **Data Modeling** | [data_modeling.md](docs/mechanics/data_modeling.md) | Dataclasses, per-user storage, dashboards |
 | **Styling** | [styling.md](docs/mechanics/styling.md) | `.classes()`, `.style()`, custom CSS |
+| **Background Execution** | [background_execution.md](docs/mechanics/background_execution.md) | `run.io_bound`, `background_tasks`, threading |
+| **Custom Components** | [custom_components.md](docs/mechanics/custom_components.md) | Building Python/JS components |
+| **Three.js Integration** | [threejs_integration.md](docs/mechanics/threejs_integration.md) | 3D rendering with Three.js |
+| **Coding Style** | [coding_style.md](docs/mechanics/coding_style.md) | NiceGUI conventions, formatting, type hints |
 
 ## Class Reference by Category
 
@@ -3753,9 +3757,11 @@ The following documentation is not included in this prompt but available for ref
 
 ### Advanced Mechanics
 
+- **background_execution.md** (`docs/mechanics/background_execution.md`): run.io_bound() for I/O and C++ libs (OpenCV, PIL, NumPy), run.cpu_bound() for pure Python, background_tasks.create(), ui.timer() polling, thread-safe state with locks
 - **custom_components.md** (`docs/mechanics/custom_components.md`): Custom JS/Vue components: creating Python+JS elements, props, events, run_method(), Vue lifecycle hooks (mounted/unmounted), ESM modules, resource loading
 - **threejs_integration.md** (`docs/mechanics/threejs_integration.md`): Custom Three.js scenes using nicegui-scene module, WeakMap pattern to avoid Vue reactivity conflicts, custom GLSL shaders, OrbitControls, particle systems
 - **configuration_deployment.md** (`docs/mechanics/configuration_deployment.md`): ui.run() parameters, favicon options, Docker deployment, PyInstaller packaging, SSL/HTTPS, native window mode, NiceGUI On Air
+- **coding_style.md** (`docs/mechanics/coding_style.md`): NiceGUI coding conventions: single quotes, ~120 char lines, type hints with Self/Optional, Sphinx docstrings, mixin composition, WeakRef patterns
 
 
 
@@ -3783,6 +3789,17 @@ updates, ui.dialog() for settings, filter controls that update all charts/KPIs.
 Three.js particle tornado with custom GLSL shaders using NiceGUI's bundled Three.js.
 Demonstrates: Element subclass with nicegui-scene module, WeakMap for Vue reactivity
 workaround, custom vertex/fragment shaders, OrbitControls, real-time parameter updates.
+But most importantly: How to visualize 3D scenes in NiceGUI.
+
+
+### video_custom_component
+
+**Location**: `samples/video_custom_component/`
+
+Custom JavaScript/Vue component with real-time video processing.
+Demonstrates: Element subclass with component='*.js', run_method(), run.io_bound(),
+background_tasks.create(), ui.timer() for async polling, 16 OpenCV filters,
+thread-safe state sharing, event-driven frame requests, base64 JPEG transfer.
 
 
 ### multi_dashboard
@@ -3803,15 +3820,6 @@ with signed cookies), pages/ (auto-discovered page modules), static/ (CSS/JS).
 Stock comparison dashboard with async data loading.
 Demonstrates: dark mode, run.io_bound() for API calls, ui.echart(),
 ui.chip() for toggles, ui.timer() for initial load, custom CSS.
-
-
-### bouncing_circle
-
-**Location**: `samples/bouncing_circle/`
-
-Custom JavaScript/Vue component with server-side PIL rendering.
-Demonstrates: Element subclass with component='*.js', run_method(),
-event-driven frame requests, base64 image transfer, Vue lifecycle hooks.
 
 
 ### sub_pages_demo

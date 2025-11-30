@@ -1,7 +1,10 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[codz]
+*.py[cod]
 *$py.class
+
+# Sample video files (download from source)
+samples/*/video.mp4
 
 # C extensions
 *.so

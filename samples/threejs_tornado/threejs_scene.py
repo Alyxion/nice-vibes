@@ -30,13 +30,12 @@ class ThreeJSScene(Element, component='threejs_scene.js'):
     ) -> None:
         """Initialize the Three.js tornado scene.
         
-        Args:
-            particle_count: Number of particles in the tornado
-            rotation_speed: Angular velocity of rotation
-            height: Tornado height
-            radius: Base radius of the tornado
-            color_intensity: Brightness of the glow effect
-            wind_strength: Turbulence/chaos in particle movement
+        :param particle_count: Number of particles in the tornado
+        :param rotation_speed: Angular velocity of rotation
+        :param height: Tornado height
+        :param radius: Base radius of the tornado
+        :param color_intensity: Brightness of the glow effect
+        :param wind_strength: Turbulence/chaos in particle movement
         """
         super().__init__()
         self._props['particleCount'] = particle_count
@@ -49,8 +48,7 @@ class ThreeJSScene(Element, component='threejs_scene.js'):
     def update_settings(self, settings: dict[str, Any]) -> None:
         """Update tornado settings in real-time.
         
-        Args:
-            settings: Dictionary of setting names to values
+        :param settings: Dictionary of setting names to values
         """
         self.run_method('updateSettings', settings)
     

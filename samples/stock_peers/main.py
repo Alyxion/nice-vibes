@@ -31,7 +31,8 @@ class StockData:
     loading: bool = False
     
     @classmethod
-    def get_current(cls) -> 'StockData':
+    def current(cls) -> 'StockData':
+        """Get or create StockData for the current user."""
         if 'stock_data' not in app.storage.client:
             app.storage.client['stock_data'] = cls()
         return app.storage.client['stock_data']
@@ -111,7 +112,7 @@ def index():
     # Dark mode
     ui.dark_mode().enable()
     
-    data = StockData.get_current()
+    data = StockData.current()
     
     # Custom dark theme CSS
     ui.add_head_html('''

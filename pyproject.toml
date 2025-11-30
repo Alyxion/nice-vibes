@@ -1,17 +1,48 @@
 [project]
-name = "nice-prompt"
+name = "nice-vibes"
 version = "0.1.0"
-description = "Prompts, patterns, and examples for AI coding assistants to generate NiceGUI code"
+description = "Developing beautiful NiceGUI applications with AI"
 authors = [
-    {name = "Michael Ikemann",email = "michael.ikemann@gmail.com"}
+    {name = "Michael Ikemann", email = "michael.ikemann@gmail.com"}
 ]
-readme = "README.md"
-requires-python = "^3.12"
+readme = "README_PYPI.md"
+license = {text = "MIT"}
+requires-python = ">=3.12"
+keywords = [
+    "nicegui",
+    "ai",
+    "prompts",
+    "ui",
+    "web",
+    "framework",
+    "coding-assistant",
+    "llm",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: User Interfaces",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
 dependencies = [
-    "nicegui (>=3.3.1,<4.0.0)",
-    "yfinance (>=0.2.66,<0.3.0)",
-    "pillow (>=12.0.0,<13.0.0)"
+    "nicegui>=3.3.1,<4.0.0",
+    "yfinance>=0.2.66,<0.3.0",
+    "pillow>=12.0.0,<13.0.0",
+    "opencv-python>=4.12.0.88,<5.0.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Alyxion/nice-vibes"
+Documentation = "https://github.com/Alyxion/nice-vibes#readme"
+Repository = "https://github.com/Alyxion/nice-vibes.git"
+Issues = "https://github.com/Alyxion/nice-vibes/issues"
 
 [tool.poetry]
 packages = [{include = "scripts"}]

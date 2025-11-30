@@ -22,7 +22,7 @@ import tiktoken
 import yaml
 
 
-DEFAULT_GITHUB_URL = 'https://github.com/Alyxion/nice-prompt'
+DEFAULT_GITHUB_URL = 'https://github.com/Alyxion/nice-vibes'
 
 
 @dataclass
@@ -332,7 +332,7 @@ def build_variant(variant: PromptVariant, github_url: str, output_dir: Path, roo
     
     # Determine filename based on online/offline
     mode_suffix = '' if online else '_offline'
-    output_file = output_dir / f'nice_prompt{variant.suffix}{mode_suffix}.md'
+    output_file = output_dir / f'nice_vibes{variant.suffix}{mode_suffix}.md'
     output_file.write_text(master_prompt)
     
     token_count = count_tokens(master_prompt)

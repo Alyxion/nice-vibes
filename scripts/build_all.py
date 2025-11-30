@@ -56,6 +56,9 @@ def main():
     # 5. Build master prompts
     success = run_script('build_master_prompt.py') and success
     
+    # 6. Build PyPI readme
+    success = run_script('build_pypi_readme.py') and success
+    
     # Summary
     print(f'\n{"="*60}')
     if success:
