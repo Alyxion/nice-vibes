@@ -53,8 +53,9 @@ Sample guidelines:
 - Store per-user state in `app.storage.client`
 - Always use `ui.run(show=False, title='...')` in the main guard
 
-For animated samples (e.g., bouncing ball):
+For animated samples (e.g., bouncing ball, tornado):
 - Add `<!-- animated -->` marker in README.md
+- Use `![Animation](animated.gif)` in the README instead of screenshot.jpg
 - The gallery will show a live-recorded GIF instead of static screenshot
 
 ### Samples Gallery

@@ -1,7 +1,7 @@
 # Bouncing Circle Animation
 <!-- animated -->
 
-![Screenshot](screenshot.jpg)
+![Animation](animated.gif)
 
 A sample demonstrating custom JavaScript/Vue components with Python-side rendering using PIL.
 

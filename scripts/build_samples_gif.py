@@ -2,7 +2,8 @@
 """
 Build an animated GIF showcasing all sample screenshots.
 
-Samples with an `animated` marker in their README will be recorded live for 5 seconds.
+Samples with an `animated` marker in their README will be recorded live.
+Order is determined by docs/prompt_config.yaml samples section.
 
 Usage:
     poetry run python scripts/build_samples_gif.py
@@ -12,9 +13,12 @@ import sys
 import time
 from pathlib import Path
 
+import yaml
 from PIL import Image
 
-SAMPLES_DIR = Path(__file__).parent.parent / 'samples'
+SCRIPTS_DIR = Path(__file__).parent
+SAMPLES_DIR = SCRIPTS_DIR.parent / 'samples'
+CONFIG_FILE = SCRIPTS_DIR.parent / 'docs' / 'prompt_config.yaml'
 OUTPUT_FILE = SAMPLES_DIR / 'showcase.gif'
 
 # GIF settings
@@ -25,6 +29,16 @@ MAX_WIDTH = 600  # Compress to this width
 GALLERY_WIDTH = 280  # Width for gallery thumbnails
 MAX_COLORS = 128  # Color palette size
 PORT = 8080
+
+
+def get_sample_order() -> list[str]:
+    """Get sample order from config file."""
+    if CONFIG_FILE.exists():
+        with open(CONFIG_FILE) as f:
+            config = yaml.safe_load(f)
+        samples = config.get('samples', [])
+        return [s['name'] for s in samples if 'name' in s]
+    return []
 
 
 def is_animated(sample_dir: Path) -> bool:
@@ -75,7 +89,7 @@ def capture_animated_frames(sample_dir: Path) -> list[Image.Image]:
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--window-size=1440,1080')
+        options.add_argument('--window-size=1480,1100')
         
         driver = webdriver.Chrome(options=options)
         driver.get(f'http://localhost:{PORT}')
@@ -155,7 +169,17 @@ def build_gif() -> None:
     all_frames = []
     all_durations = []
     
-    for sample_dir in sorted(SAMPLES_DIR.iterdir()):
+    # Get samples in order from config (others follow alphabetically)
+    sample_order = get_sample_order()
+    sample_dirs = [d for d in SAMPLES_DIR.iterdir() if d.is_dir()]
+    def sort_key(d):
+        try:
+            return sample_order.index(d.name)
+        except ValueError:
+            return len(sample_order) + ord(d.name[0])
+    sample_dirs.sort(key=sort_key)
+    
+    for sample_dir in sample_dirs:
         if not sample_dir.is_dir():
             continue
         

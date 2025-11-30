@@ -29,6 +29,8 @@ mechanics:
 adv_mechanics:
   - file: custom_components.md
     summary: "Custom JS/Vue components: creating Python+JS elements, props, events, run_method(), Vue lifecycle hooks (mounted/unmounted), ESM modules, resource loading"
+  - file: threejs_integration.md
+    summary: "Custom Three.js scenes using nicegui-scene module, WeakMap pattern to avoid Vue reactivity conflicts, custom GLSL shaders, OrbitControls, particle systems"
   - file: configuration_deployment.md
     summary: "ui.run() parameters, favicon options, Docker deployment, PyInstaller packaging, SSL/HTTPS, native window mode, NiceGUI On Air"
 
@@ -68,10 +70,25 @@ classes:
 exclude:
   - "*_references.md"          # URL references not needed
 
-# Sample applications for reference
+# Sample applications for reference (order determines showcase GIF sequence)
 # GitHub: https://github.com/Alyxion/nice-prompt/tree/main/samples
 # Local: samples/
 samples:
+  - name: dashboard
+    path: samples/dashboard/
+    summary: |
+      Analytics dashboard showcasing 8 chart types and input controls with OO architecture.
+      Demonstrates: Dashboard class with current(), DashboardData dataclass, ui.echart()
+      for line/bar/pie/gauge/radar/heatmap/scatter/candlestick, ui.timer() for real-time
+      updates, ui.dialog() for settings, filter controls that update all charts/KPIs.
+
+  - name: threejs_tornado
+    path: samples/threejs_tornado/
+    summary: |
+      Three.js particle tornado with custom GLSL shaders using NiceGUI's bundled Three.js.
+      Demonstrates: Element subclass with nicegui-scene module, WeakMap for Vue reactivity
+      workaround, custom vertex/fragment shaders, OrbitControls, real-time parameter updates.
+
   - name: multi_dashboard
     path: samples/multi_dashboard/
     summary: |
@@ -80,21 +97,6 @@ samples:
       visibility toggle, page auto-discovery, external CSS/JS, ECharts, dark mode.
       Key files: main.py (server setup), layout.py (AppLayout), models/auth.py (AuthSession
       with signed cookies), pages/ (auto-discovered page modules), static/ (CSS/JS).
-
-  - name: sub_pages_demo
-    path: samples/sub_pages_demo/
-    summary: |
-      SPA navigation with persistent client state. Single-file demo of ui.sub_pages.
-      Demonstrates: nested sub_pages, app.storage.client persistence, navigation drawer,
-      timer that keeps running across navigation, notes that persist during session.
-
-  - name: dashboard
-    path: samples/dashboard/
-    summary: |
-      Analytics dashboard showcasing 8 chart types and input controls with OO architecture.
-      Demonstrates: Dashboard class with current(), DashboardData dataclass, ui.echart()
-      for line/bar/pie/gauge/radar/heatmap/scatter/candlestick, ui.timer() for real-time
-      updates, ui.dialog() for settings, filter controls that update all charts/KPIs.
 
   - name: stock_peers
     path: samples/stock_peers/
@@ -109,3 +111,10 @@ samples:
       Custom JavaScript/Vue component with server-side PIL rendering.
       Demonstrates: Element subclass with component='*.js', run_method(),
       event-driven frame requests, base64 image transfer, Vue lifecycle hooks.
+
+  - name: sub_pages_demo
+    path: samples/sub_pages_demo/
+    summary: |
+      SPA navigation with persistent client state. Single-file demo of ui.sub_pages.
+      Demonstrates: nested sub_pages, app.storage.client persistence, navigation drawer,
+      timer that keeps running across navigation, notes that persist during session.

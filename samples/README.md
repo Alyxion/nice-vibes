@@ -44,7 +44,13 @@ Working example applications demonstrating NiceGUI patterns.
 <a href="sub_pages_demo/"><img src="sub_pages_demo/screenshot.jpg" width="280"></a><br>
 <sub>A demonstration of NiceGUI's `ui.sub_pages` for building Single Page Applications (SPAs) with persistent client state.</sub>
 </td>
-<td></td>
+<td align="center" valign="top" width="33%">
+<div style="height: 40px; display: flex; align-items: center; justify-content: center;">
+<a href="threejs_tornado/"><strong>Three.js Tornado Visualization</strong></a>
+</div>
+<a href="threejs_tornado/"><img src="threejs_tornado/animated.gif" width="280"></a><br>
+<sub>A stunning 3D tornado particle system demonstrating advanced Three.js integration with NiceGUI.</sub>
+</td>
 </tr>
 </table><!-- GALLERY_END -->
 

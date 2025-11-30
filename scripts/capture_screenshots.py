@@ -23,8 +23,8 @@ from PIL import Image
 
 # Configuration
 SAMPLES_DIR = Path(__file__).parent.parent / 'samples'
-SCREENSHOT_WIDTH = 1440
-SCREENSHOT_HEIGHT = 1080  # 4:3 aspect ratio
+SCREENSHOT_WIDTH = 1480  # Extra width to avoid horizontal scrollbars
+SCREENSHOT_HEIGHT = 1100  # 4:3 aspect ratio
 OUTPUT_WIDTH = 800  # README-friendly size
 WAIT_SECONDS = 3
 MIN_WAIT_SECONDS = 2
