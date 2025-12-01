@@ -25,9 +25,12 @@ OUTPUT_FILE = SAMPLES_DIR / 'showcase.gif'
 STATIC_DURATION_MS = 2500  # 2.5 seconds for static screenshots
 ANIMATED_DURATION_S = 3  # 3 seconds recording for animated samples
 ANIMATED_FPS = 20  # Frames per second for animated samples
-MAX_WIDTH = 800  # Compress to this width (showcase GIF)
+MAX_WIDTH = 640  # Compress to this width (showcase GIF) - keep under 10MB for PyPI
 GALLERY_WIDTH = 560  # Width for gallery thumbnails (individual sample GIFs)
 MAX_COLORS = 128  # Color palette size
+MAX_SHOWCASE_SIZE_MB = 9.5  # Target max size for PyPI compatibility
+FRAME_DIFF_THRESHOLD = 0.005  # Skip frames that differ by less than 0.5% (deduplication)
+WEBGL_INIT_DELAY = 3  # Extra seconds to wait for WebGL/Three.js to initialize
 PORT = 8080
 
 
@@ -49,6 +52,44 @@ def is_animated(sample_dir: Path) -> bool:
         # Look for <!-- animated --> marker in README
         return '<!-- animated -->' in content
     return False
+
+
+def frames_similar(img1: Image.Image, img2: Image.Image, threshold: float = FRAME_DIFF_THRESHOLD) -> bool:
+    """Check if two frames are similar enough to deduplicate."""
+    import numpy as np
+    
+    # Convert to same mode and size
+    if img1.size != img2.size:
+        return False
+    
+    arr1 = np.array(img1.convert('RGB'), dtype=np.float32)
+    arr2 = np.array(img2.convert('RGB'), dtype=np.float32)
+    
+    # Calculate normalized difference
+    diff = np.abs(arr1 - arr2).mean() / 255.0
+    return diff < threshold
+
+
+def deduplicate_frames(frames: list[Image.Image], base_duration: int) -> tuple[list[Image.Image], list[int]]:
+    """Remove duplicate frames and adjust durations.
+    
+    Returns deduplicated frames and their durations.
+    """
+    if not frames:
+        return [], []
+    
+    deduped_frames = [frames[0]]
+    durations = [base_duration]
+    
+    for frame in frames[1:]:
+        if frames_similar(deduped_frames[-1], frame):
+            # Extend duration of previous frame instead of adding duplicate
+            durations[-1] += base_duration
+        else:
+            deduped_frames.append(frame)
+            durations.append(base_duration)
+    
+    return deduped_frames, durations
 
 
 def kill_port(port: int) -> None:
@@ -94,6 +135,10 @@ def capture_animated_frames(sample_dir: Path) -> list[Image.Image]:
         driver = webdriver.Chrome(options=options)
         driver.get(f'http://localhost:{PORT}')
         time.sleep(1)  # Initial load
+        
+        # Extra wait for WebGL/Three.js samples to initialize
+        if 'threejs' in sample_dir.name or 'cone' in sample_dir.name or '3d' in sample_dir.name.lower():
+            time.sleep(WEBGL_INIT_DELAY)
         
         # Capture frames
         frame_count = ANIMATED_DURATION_S * ANIMATED_FPS
@@ -195,11 +240,14 @@ def build_gif() -> None:
             print(f'  Recording: {name} (animated)...')
             frames = capture_animated_frames(sample_dir)
             if frames:
-                # Save individual gallery GIF
+                # Save individual gallery GIF (full frames)
                 save_sample_gif(sample_dir, frames)
-                # Add to showcase
-                all_frames.extend(frames)
-                all_durations.extend([int(1000 / ANIMATED_FPS)] * len(frames))
+                # Deduplicate for showcase to reduce file size
+                base_duration = int(1000 / ANIMATED_FPS)
+                deduped, durations = deduplicate_frames(frames, base_duration)
+                print(f'  Deduplicated: {len(frames)} -> {len(deduped)} frames')
+                all_frames.extend(deduped)
+                all_durations.extend(durations)
             else:
                 # Try to use existing animated.gif if capture failed
                 existing_gif = sample_dir / 'animated.gif'
@@ -246,8 +294,12 @@ def build_gif() -> None:
         optimize=True,
     )
     
-    size_kb = OUTPUT_FILE.stat().st_size / 1024
-    print(f'  Saved: {OUTPUT_FILE} ({size_kb:.0f} KB, {len(all_frames)} frames)')
+    size_mb = OUTPUT_FILE.stat().st_size / (1024 * 1024)
+    print(f'  Saved: {OUTPUT_FILE} ({size_mb:.1f} MB, {len(all_frames)} frames)')
+    
+    if size_mb > MAX_SHOWCASE_SIZE_MB:
+        print(f'\n  WARNING: GIF size ({size_mb:.1f} MB) exceeds PyPI limit ({MAX_SHOWCASE_SIZE_MB} MB)!')
+        print('  Consider reducing MAX_WIDTH, MAX_COLORS, or ANIMATED_FPS in build_samples_gif.py')
 
 
 if __name__ == '__main__':
