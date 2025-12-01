@@ -36,9 +36,9 @@ Just download and use the pre-built master prompt directly:
 
 | Variant | Tokens | Use Case | Download |
 |---------|--------|----------|----------|
-| **Compact** | ~14K | Quick tasks, simple UI | [nice_vibes_compact.md](output/nice_vibes_compact.md) |
-| **Optimum** | ~23K | Most use cases | [nice_vibes.md](output/nice_vibes.md) |
-| **Extended** | ~34K | Custom components, deployment | [nice_vibes_extended.md](output/nice_vibes_extended.md) |
+| **Compact** | ~14K | Quick tasks, simple UI | [nice_vibes_compact.md](https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes_compact.md) |
+| **Optimum** | ~23K | Most use cases | [nice_vibes.md](https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes.md) |
+| **Extended** | ~34K | Custom components, deployment | [nice_vibes_extended.md](https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes_extended.md) |
 
 Copy the content into your AI assistant's context or system prompt.
 
