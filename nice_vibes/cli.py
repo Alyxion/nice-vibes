@@ -6,9 +6,11 @@ Usage:
     nice-vibes run <sample>      # Run a sample application
     nice-vibes copy <sample>     # Copy sample source to current directory
     nice-vibes copy <sample> -o <dir>  # Copy to specific directory
+    nice-vibes mcp-config        # Print MCP server configuration
 """
 
 import argparse
+import json
 import shutil
 import subprocess
 import sys
@@ -26,8 +28,8 @@ try:
 except ImportError:
     HAS_CURSES = False
 
-# Paths relative to this file
-PACKAGE_DIR = Path(__file__).parent.parent
+# Paths - resolve to absolute paths to work regardless of CWD
+PACKAGE_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = PACKAGE_DIR / 'samples'
 CONFIG_FILE = PACKAGE_DIR / 'docs' / 'prompt_config.yaml'
 
@@ -195,6 +197,32 @@ def run_sample(sample_name: str, extra_args: list[str]) -> int:
         return 0
 
 
+def print_mcp_config() -> int:
+    """Print MCP server configuration for use with AI tools."""
+    # Get the Python executable path
+    python_path = sys.executable
+    
+    config = {
+        "mcpServers": {
+            "nice-vibes": {
+                "command": python_path,
+                "args": ["-m", "nice_vibes.mcp"]
+            }
+        }
+    }
+    
+    print("# NiceVibes MCP Server Configuration")
+    print("#")
+    print("# Add this to your MCP client config (e.g., Windsurf, Claude Desktop):")
+    print("#")
+    print(json.dumps(config, indent=2))
+    print()
+    print("# For Windsurf: Add to ~/.codeium/windsurf/mcp_config.json")
+    print("# For Claude Desktop: Add to ~/Library/Application Support/Claude/claude_desktop_config.json")
+    
+    return 0
+
+
 def copy_sample(sample_name: str, output_dir: str | None = None) -> int:
     """Copy sample source code to a directory.
     
@@ -273,6 +301,9 @@ def main() -> int:
         help='Output directory (default: ./<sample_name>)',
     )
     
+    # MCP config command
+    subparsers.add_parser('mcp-config', help='Print MCP server configuration')
+    
     args = parser.parse_args()
     
     if args.command == 'list':
@@ -282,6 +313,8 @@ def main() -> int:
         return run_sample(args.sample, args.args)
     elif args.command == 'copy':
         return copy_sample(args.sample, args.output)
+    elif args.command == 'mcp-config':
+        return print_mcp_config()
     else:
         # No command - show interactive selector
         result = interactive_select()

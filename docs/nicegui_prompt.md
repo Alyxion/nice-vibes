@@ -30,8 +30,15 @@ my-app/
 │   └── __init__.py      # Required for Python package
 ├── main.py              # Entry point with ui.run()
 ├── pyproject.toml       # Poetry config (auto-generated)
-└── README.md            # Project documentation
+├── README.md            # Project documentation
+└── AGENTS.md            # AI agent rules (see below)
 ```
+
+**AGENTS.md for new projects:**
+When creating a new NiceGUI project, always add an `AGENTS.md` file if one doesn't exist yet. Copy it from:
+`https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/docs/mechanics/AGENTS.md`
+
+This file contains project rules for AI agents working on NiceGUI projects.
 
 Run your app with:
 

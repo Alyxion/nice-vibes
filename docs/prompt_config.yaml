@@ -77,6 +77,7 @@ exclude:
 # Sample applications for reference (order determines showcase GIF sequence)
 # GitHub: https://github.com/Alyxion/nice-prompt/tree/main/samples
 # Local: samples/
+# Set showcase: false to exclude from showcase GIF (simple/template samples)
 samples:
   - name: dashboard
     path: samples/dashboard/
@@ -140,3 +141,13 @@ samples:
       SPA navigation with persistent client state. Single-file demo of ui.sub_pages.
       Demonstrates: nested sub_pages, app.storage.client persistence, navigation drawer,
       timer that keeps running across navigation, notes that persist during session.
+
+  - name: calculator
+    path: samples/calculator/
+    tags: [beginner, dataclass, binding, form, calculator, minimal]
+    showcase: false
+    summary: |
+      Minimal calculator app demonstrating NiceGUI best practices.
+      Demonstrates: dataclass for state, bind_value/bind_text for data binding,
+      proper @ui.page decorator, header, main guard with title and show=False.
+      This is the recommended minimal structure for any NiceGUI application.

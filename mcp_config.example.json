@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "nicegui": {
+      "command": "python",
+      "args": ["-m", "nice_vibes.mcp"]
+    }
+  }
+}

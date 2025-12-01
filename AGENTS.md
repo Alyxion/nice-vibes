@@ -27,6 +27,11 @@ scripts/                    # Build and validation tools
 output/                     # Generated master prompt
 ```
 
+
+## Environment
+
+This project is a poetry project. Use `poetry install` to install dependencies.
+
 ## Maintenance Rules
 
 ### When Adding Documentation

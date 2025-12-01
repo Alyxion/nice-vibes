@@ -35,12 +35,13 @@ PORT = 8080
 
 
 def get_sample_order() -> list[str]:
-    """Get sample order from config file."""
+    """Get sample order from config file, excluding samples with showcase: false."""
     if CONFIG_FILE.exists():
         with open(CONFIG_FILE) as f:
             config = yaml.safe_load(f)
         samples = config.get('samples', [])
-        return [s['name'] for s in samples if 'name' in s]
+        # Only include samples where showcase is not explicitly false
+        return [s['name'] for s in samples if 'name' in s and s.get('showcase', True)]
     return []
 
 

@@ -127,6 +127,33 @@ nice-vibes copy video_custom_component -o my_video_app
   <img src="assets/cli_preview.png" alt="CLI Preview" width="600">
 </p>
 
+## 🔌 MCP Server (Optional)
+
+NiceVibes includes an optional [Model Context Protocol](https://modelcontextprotocol.io/) server that gives AI assistants dynamic access to:
+
+- **Guided project creation** - Step-by-step questionnaire with best practices
+- **Documentation search** - Find topics without loading everything into context
+- **Source code inspection** - Read NiceGUI component source directly
+- **Visual debugging** - Capture screenshots of running or newly created applications
+- **Sample exploration** - Browse and copy working examples
+
+Get your configuration with `nice-vibes mcp-config`:
+
+```json
+{
+  "mcpServers": {
+    "nice-vibes": {
+      "command": "/path/to/python",
+      "args": ["-m", "nice_vibes.mcp"]
+    }
+  }
+}
+```
+
+Add this to your MCP client config ([Windsurf](https://www.windsurf.com/), [Claude Desktop](https://claude.ai/desktop), etc.).
+
+See [nice_vibes/mcp/README.md](nice_vibes/mcp/README.md/) for detailed setup instructions.
+
 ## 🙏 Credits
 
 Created by **Michael Ikemann**

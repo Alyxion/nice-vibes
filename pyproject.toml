@@ -1,6 +1,6 @@
 [project]
 name = "nice-vibes"
-version = "0.1.1"
+version = "0.1.2"
 description = "Developing beautiful NiceGUI applications with AI"
 authors = [
     {name = "Michael Ikemann", email = "michael.ikemann@gmail.com"}
@@ -37,6 +37,7 @@ dependencies = [
     "pillow>=12.0.0,<13.0.0",
     "opencv-python>=4.12.0.88,<5.0.0.0",
     "pyyaml>=6.0",
+    "mcp>=1.0.0",
 ]
 
 [project.urls]
@@ -47,11 +48,13 @@ Issues = "https://github.com/Alyxion/nice-vibes/issues"
 
 [project.scripts]
 nice-vibes = "nice_vibes.cli:main"
+nice-vibes-mcp-test = "nice_vibes.mcp.test_client:main"
 
 [tool.poetry]
 packages = [
     {include = "nice_vibes"},
     {include = "samples"},
+    {include = "docs"},
 ]
 
 [build-system]
