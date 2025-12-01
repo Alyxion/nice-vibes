@@ -40,7 +40,7 @@ Just download and use the pre-built master prompt directly:
 | **Optimum** | ~23K | Most use cases | [nice_vibes.md](https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes.md) |
 | **Extended** | ~34K | Custom components, deployment | [nice_vibes_extended.md](https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes_extended.md) |
 
-Copy the content into your AI assistant's context or system prompt.
+Copy the content into your AI assistant's context or system prompt. When using tools such as Windsurf use Opus 4.5 as model and paste one of the URLs above to let it "teach itself" the principles of NiceGUI.
 
 ### Build From Source (Optional)
 
