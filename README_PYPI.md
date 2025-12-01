@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Alyxion/nice-vibes/main/samples/showcase.gif" alt="Sample Applications" width="600">
+  <img src="https://raw.githubusercontent.com/Alyxion/nice-vibes/main/samples/showcase.gif" alt="Sample Applications">
 </p>
 
 A comprehensive toolkit of prompts, patterns, and examples that help AI coding assistants generate correct, idiomatic [NiceGUI](https://nicegui.io/) code.
@@ -151,6 +151,12 @@ Get your configuration with `nice-vibes mcp-config`:
 ```
 
 Add this to your MCP client config ([Windsurf](https://www.windsurf.com/), [Claude Desktop](https://claude.ai/desktop), etc.).
+
+This is how it works:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Alyxion/nice-vibes/main/assets/mcp_sample.png" alt="MCP Sample" width="600">
+</p>
 
 See [nice_vibes/mcp/README.md](https://github.com/Alyxion/nice-vibes/tree/main/nice_vibes/mcp/README.md) for detailed setup instructions.
 

@@ -152,6 +152,12 @@ Get your configuration with `nice-vibes mcp-config`:
 
 Add this to your MCP client config ([Windsurf](https://www.windsurf.com/), [Claude Desktop](https://claude.ai/desktop), etc.).
 
+This is how it works:
+
+<p align="center">
+  <img src="assets/mcp_sample.png" alt="MCP Sample" width="600">
+</p>
+
 See [nice_vibes/mcp/README.md](nice_vibes/mcp/README.md/) for detailed setup instructions.
 
 ## 🙏 Credits

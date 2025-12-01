@@ -34,13 +34,13 @@ While the static prompts work great for most tasks, the MCP server provides **dy
 
 | Tool | Purpose |
 |------|---------|
-| `capture_url_screenshot` | Capture a screenshot of a running NiceGUI app at any URL. Also saves HTML to disk and opens in browser. |
-| `capture_app_screenshot` | Start an app from a main.py file, capture screenshot, then stop it - perfect for previewing newly created projects. Also saves HTML to disk and opens in browser. |
-| `capture_sample_screenshot` | Start a sample application, capture its screenshot, then stop it. Also saves HTML to disk and opens in browser. |
+| `capture_url_screenshot` | Capture a screenshot of a running NiceGUI app at any URL. Also saves HTML to disk. |
+| `capture_app_screenshot` | Start an app from a main.py file, capture screenshot, then stop it - perfect for previewing newly created projects. Also saves HTML to disk. |
+| `capture_sample_screenshot` | Start a sample application, capture its screenshot, then stop it. Also saves HTML to disk. |
 | `kill_port_8080` | Kill any process on port 8080 - useful when restarting apps |
 | `open_browser` | Open a URL in the user's default browser (default: http://localhost:8080) |
 
-**Note:** Screenshots are captured at Full HD resolution (1920x1080) and automatically opened in your browser since some MCP clients cannot display images inline.
+**Note:** Screenshots are captured at Full HD resolution (1920x1080). An HTML file is saved to disk with the path included in the response - use `open_browser` with the `file://` URL if the user wants to view it.
 
 ### 📦 Sample Applications
 

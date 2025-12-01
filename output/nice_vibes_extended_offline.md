@@ -39,8 +39,15 @@ my-app/
 │   └── __init__.py      # Required for Python package
 ├── main.py              # Entry point with ui.run()
 ├── pyproject.toml       # Poetry config (auto-generated)
-└── README.md            # Project documentation
+├── README.md            # Project documentation
+└── AGENTS.md            # AI agent rules (see below)
 ```
+
+**AGENTS.md for new projects:**
+When creating a new NiceGUI project, always add an `AGENTS.md` file if one doesn't exist yet. Copy it from:
+`https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/docs/mechanics/AGENTS.md`
+
+This file contains project rules for AI agents working on NiceGUI projects.
 
 Run your app with:
 
@@ -5877,3 +5884,15 @@ ui.chip() for toggles, ui.timer() for initial load, custom CSS.
 SPA navigation with persistent client state. Single-file demo of ui.sub_pages.
 Demonstrates: nested sub_pages, app.storage.client persistence, navigation drawer,
 timer that keeps running across navigation, notes that persist during session.
+
+
+### calculator
+
+**Location**: `samples/calculator/`
+
+**Tags**: #beginner, #dataclass, #binding, #form, #calculator, #minimal
+
+Minimal calculator app demonstrating NiceGUI best practices.
+Demonstrates: dataclass for state, bind_value/bind_text for data binding,
+proper @ui.page decorator, header, main guard with title and show=False.
+This is the recommended minimal structure for any NiceGUI application.

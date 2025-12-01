@@ -180,15 +180,17 @@ def kill_port(port: int) -> bool:
         return False
 
 
-def save_screenshot_html(png_bytes: bytes, title: str, description: str = "") -> Path:
-    """Save a screenshot as an HTML file and open it in the browser.
+def save_screenshot_html(png_bytes: bytes, title: str, description: str = "", open_in_browser: bool = False) -> Path:
+    """Save a screenshot as an HTML file for viewing.
     
     This is useful when the MCP client cannot display images inline.
-    Creates an HTML file with the embedded image and opens it in the default browser.
+    Creates an HTML file with the embedded image. The path is returned
+    so the user can open it manually via file:// URL if needed.
     
     :param png_bytes: The PNG image data
     :param title: Title for the HTML page
     :param description: Optional description text
+    :param open_in_browser: If True, automatically open the HTML file in the browser
     :return: Path to the created HTML file
     """
     b64_data = base64.standard_b64encode(png_bytes).decode('utf-8')
@@ -247,8 +249,9 @@ def save_screenshot_html(png_bytes: bytes, title: str, description: str = "") ->
     html_path = temp_dir / f'screenshot_{timestamp}.html'
     html_path.write_text(html_content)
     
-    # Open in browser
-    webbrowser.open(f'file://{html_path}')
+    # Optionally open in browser
+    if open_in_browser:
+        webbrowser.open(f'file://{html_path}')
     
     return html_path
 
@@ -670,7 +673,7 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="capture_sample_screenshot",
-            description="Capture a screenshot of a running sample application. Returns an image and also saves an HTML file to disk (opened in browser automatically). The HTML path is included in the response for viewing via file:// URL.",
+            description="Capture a screenshot of a running sample application. Returns an image and also saves an HTML file to disk. The HTML path is included in the response for viewing via file:// URL.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -688,13 +691,18 @@ async def list_tools() -> list[Tool]:
                         "description": "Seconds to wait after page load (default: 3)",
                         "default": 3,
                     },
+                    "open_browser": {
+                        "type": "boolean",
+                        "description": "Open the HTML file in browser to show it to the user (default: false)",
+                        "default": False,
+                    },
                 },
                 "required": ["sample"],
             },
         ),
         Tool(
             name="capture_url_screenshot",
-            description="Capture a screenshot of any URL. Use this to visually debug a RUNNING NiceGUI application at localhost:8080. Returns an image and also saves an HTML file to disk (opened in browser automatically). The HTML path is included in the response for viewing via file:// URL.",
+            description="Capture a screenshot of any URL. Use this to visually debug a RUNNING NiceGUI application at localhost:8080. Returns an image and also saves an HTML file to disk. The HTML path is included in the response for viewing via file:// URL.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -707,13 +715,18 @@ async def list_tools() -> list[Tool]:
                         "description": "Seconds to wait after page load (default: 3)",
                         "default": 3,
                     },
+                    "open_browser": {
+                        "type": "boolean",
+                        "description": "Open the HTML file in browser to show it to the user (default: false)",
+                        "default": False,
+                    },
                 },
                 "required": ["url"],
             },
         ),
         Tool(
             name="capture_app_screenshot",
-            description="Start a NiceGUI app from a main.py file, capture a screenshot, then stop it. Use this to preview a newly created project BEFORE running it. Provide the full path to the main.py file. Returns an image and also saves an HTML file to disk (opened in browser automatically). The HTML path is included in the response for viewing via file:// URL.",
+            description="Start a NiceGUI app from a main.py file, capture a screenshot, then stop it. Use this to preview a newly created project BEFORE running it. Provide the full path to the main.py file. Returns an image and also saves an HTML file to disk. The HTML path is included in the response for viewing via file:// URL.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -730,6 +743,11 @@ async def list_tools() -> list[Tool]:
                         "type": "integer",
                         "description": "Seconds to wait after page load (default: 3)",
                         "default": 3,
+                    },
+                    "open_browser": {
+                        "type": "boolean",
+                        "description": "Open the HTML file in browser to show it to the user (default: false)",
+                        "default": False,
                     },
                 },
                 "required": ["main_file"],
@@ -941,6 +959,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent | 
         sample = arguments.get('sample', '')
         path = arguments.get('path', '/')
         wait = arguments.get('wait', DEFAULT_WAIT)
+        open_browser = arguments.get('open_browser', False)
         
         samples = get_samples()
         if sample not in samples:
@@ -952,15 +971,16 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent | 
             png_bytes = await capture_app_screenshot(sample_path, path, wait)
             b64_data = base64.standard_b64encode(png_bytes).decode('utf-8')
             
-            # Also save as HTML and open in browser for clients that can't display images
+            # Also save as HTML for clients that can't display images
             html_path = save_screenshot_html(
                 png_bytes, 
                 f"Sample: {sample}",
-                f"Screenshot of sample '{sample}' at path '{path}'"
+                f"Screenshot of sample '{sample}' at path '{path}'",
+                open_in_browser=open_browser
             )
             
             return [
-                TextContent(type="text", text=f"Screenshot of {sample} at path '{path}':\n\n(Also opened in browser: {html_path})"),
+                TextContent(type="text", text=f"Screenshot of {sample} at path '{path}':\n\n(HTML saved to: file://{html_path})"),
                 ImageContent(type="image", data=b64_data, mimeType="image/png"),
             ]
         except Exception as e:
@@ -969,6 +989,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent | 
     elif name == "capture_url_screenshot":
         url = arguments.get('url', '')
         wait = arguments.get('wait', DEFAULT_WAIT)
+        open_browser = arguments.get('open_browser', False)
         
         if not url:
             return [TextContent(type="text", text="URL is required")]
@@ -977,15 +998,16 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent | 
             png_bytes = await capture_screenshot(url, wait)
             b64_data = base64.standard_b64encode(png_bytes).decode('utf-8')
             
-            # Also save as HTML and open in browser for clients that can't display images
+            # Also save as HTML for clients that can't display images
             html_path = save_screenshot_html(
                 png_bytes, 
                 f"Screenshot: {url}",
-                f"Screenshot of {url}"
+                f"Screenshot of {url}",
+                open_in_browser=open_browser
             )
             
             return [
-                TextContent(type="text", text=f"Screenshot of {url}:\n\n(Also opened in browser: {html_path})"),
+                TextContent(type="text", text=f"Screenshot of {url}:\n\n(HTML saved to: file://{html_path})"),
                 ImageContent(type="image", data=b64_data, mimeType="image/png"),
             ]
         except Exception as e:
@@ -995,6 +1017,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent | 
         main_file = arguments.get('main_file', '')
         path = arguments.get('path', '/')
         wait = arguments.get('wait', DEFAULT_WAIT)
+        open_browser = arguments.get('open_browser', False)
         
         if not main_file:
             return [TextContent(type="text", text="main_file is required (full path to main.py)")]
@@ -1030,15 +1053,16 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent | 
                 png_bytes = await capture_screenshot(url, wait)
                 b64_data = base64.standard_b64encode(png_bytes).decode('utf-8')
                 
-                # Also save as HTML and open in browser for clients that can't display images
+                # Also save as HTML for clients that can't display images
                 html_path = save_screenshot_html(
                     png_bytes, 
                     f"App: {main_path.parent.name}",
-                    f"Screenshot of {main_file} at path '{path}'"
+                    f"Screenshot of {main_file} at path '{path}'",
+                    open_in_browser=open_browser
                 )
                 
                 return [
-                    TextContent(type="text", text=f"Screenshot of {main_file} at path '{path}':\n\n(Also opened in browser: {html_path})"),
+                    TextContent(type="text", text=f"Screenshot of {main_file} at path '{path}':\n\n(HTML saved to: file://{html_path})"),
                     ImageContent(type="image", data=b64_data, mimeType="image/png"),
                 ]
             finally:
