@@ -21,7 +21,7 @@ def create_app() -> None:
     ui.add_head_html('''
     <style>
         html, body {
-            margin: 0;
+            margin: 0;0
             padding: 0;
             overflow: hidden;
             background-color: #1a1a2e !important;
@@ -62,7 +62,7 @@ def create_app() -> None:
     with ui.row().classes('w-full h-screen'):
         # Control Panel (Left Side)
         with ui.column().classes('control-panel w-80 h-full p-4 gap-2'):
-            ui.label('Hollow Cone Nozzle Spray').classes('text-xl font-bold text-cyan-400 mb-2')
+            ui.label('Jasmins Hollow Cone').classes('text-xl font-bold text-cyan-400 mb-2')
             ui.label('Interactive 3D Visualization').classes('text-sm text-gray-400 mb-4')
             
             # Create the scene reference (will be set later)
@@ -70,7 +70,7 @@ def create_app() -> None:
             
             # Cone Geometry Section
             with ui.column().classes('control-section w-full gap-3'):
-                ui.label('Cone Geometry').classes('text-md font-semibold text-cyan-300')
+                ui.label('Cone Geometry 123').classes('text-md font-semibold text-cyan-300')
                 
                 # Inner Angle
                 with ui.row().classes('w-full items-center'):

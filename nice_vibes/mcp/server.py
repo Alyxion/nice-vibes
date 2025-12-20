@@ -17,7 +17,6 @@ import inspect
 import io
 import subprocess
 import sys
-import tempfile
 import time
 import webbrowser
 from pathlib import Path
@@ -178,82 +177,6 @@ def kill_port(port: int) -> bool:
         return False
     except Exception:
         return False
-
-
-def save_screenshot_html(png_bytes: bytes, title: str, description: str = "", open_in_browser: bool = False) -> Path:
-    """Save a screenshot as an HTML file for viewing.
-    
-    This is useful when the MCP client cannot display images inline.
-    Creates an HTML file with the embedded image. The path is returned
-    so the user can open it manually via file:// URL if needed.
-    
-    :param png_bytes: The PNG image data
-    :param title: Title for the HTML page
-    :param description: Optional description text
-    :param open_in_browser: If True, automatically open the HTML file in the browser
-    :return: Path to the created HTML file
-    """
-    b64_data = base64.standard_b64encode(png_bytes).decode('utf-8')
-    
-    html_content = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
-    <style>
-        body {{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #1a1a2e;
-            color: #eee;
-            min-height: 100vh;
-        }}
-        .container {{
-            max-width: 1600px;
-            margin: 0 auto;
-        }}
-        .description {{
-            color: #888;
-            margin-bottom: 20px;
-        }}
-        .screenshot {{
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            max-width: 100%;
-            height: auto;
-        }}
-        .timestamp {{
-            color: #666;
-            font-size: 12px;
-            margin-top: 20px;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <p class="description">{description}</p>
-        <img src="data:image/png;base64,{b64_data}" alt="Screenshot" class="screenshot">
-        <p class="timestamp">Captured by NiceVibes MCP Server</p>
-    </div>
-</body>
-</html>'''
-    
-    # Create a temp file that won't be auto-deleted
-    temp_dir = Path(tempfile.gettempdir()) / 'nice_vibes_screenshots'
-    temp_dir.mkdir(exist_ok=True)
-    
-    # Use timestamp in filename for uniqueness
-    timestamp = time.strftime('%Y%m%d_%H%M%S')
-    html_path = temp_dir / f'screenshot_{timestamp}.html'
-    html_path.write_text(html_content)
-    
-    # Optionally open in browser
-    if open_in_browser:
-        webbrowser.open(f'file://{html_path}')
-    
-    return html_path
 
 
 def get_nicegui_class(class_name: str):
@@ -672,85 +595,22 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="capture_sample_screenshot",
-            description="Capture a screenshot of a running sample application. Returns an image and also saves an HTML file to disk. The HTML path is included in the response for viewing via file:// URL.",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "sample": {
-                        "type": "string",
-                        "description": "Sample name to capture",
-                    },
-                    "path": {
-                        "type": "string",
-                        "description": "URL path to capture (default: /)",
-                        "default": "/",
-                    },
-                    "wait": {
-                        "type": "integer",
-                        "description": "Seconds to wait after page load (default: 3)",
-                        "default": 3,
-                    },
-                    "open_browser": {
-                        "type": "boolean",
-                        "description": "Open the HTML file in browser to show it to the user (default: false)",
-                        "default": False,
-                    },
-                },
-                "required": ["sample"],
-            },
-        ),
-        Tool(
             name="capture_url_screenshot",
-            description="Capture a screenshot of any URL. Use this to visually debug a RUNNING NiceGUI application at localhost:8080. Returns an image and also saves an HTML file to disk. The HTML path is included in the response for viewing via file:// URL.",
+            description="Capture a screenshot of any URL. Use this to visually debug a RUNNING NiceGUI application at localhost:8080. Returns an image.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "url": {
                         "type": "string",
-                        "description": "Full URL to capture (e.g., http://localhost:8080/dashboard)",
+                        "description": "Full URL to capture (default: http://localhost:8080)",
+                        "default": "http://localhost:8080",
                     },
                     "wait": {
                         "type": "integer",
                         "description": "Seconds to wait after page load (default: 3)",
                         "default": 3,
                     },
-                    "open_browser": {
-                        "type": "boolean",
-                        "description": "Open the HTML file in browser to show it to the user (default: false)",
-                        "default": False,
-                    },
                 },
-                "required": ["url"],
-            },
-        ),
-        Tool(
-            name="capture_app_screenshot",
-            description="Start a NiceGUI app from a main.py file, capture a screenshot, then stop it. Use this to preview a newly created project BEFORE running it. Provide the full path to the main.py file. Returns an image and also saves an HTML file to disk. The HTML path is included in the response for viewing via file:// URL.",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "main_file": {
-                        "type": "string",
-                        "description": "Full absolute path to the main.py file (e.g., /Users/me/my_project/main.py)",
-                    },
-                    "path": {
-                        "type": "string",
-                        "description": "URL path to capture (default: /)",
-                        "default": "/",
-                    },
-                    "wait": {
-                        "type": "integer",
-                        "description": "Seconds to wait after page load (default: 3)",
-                        "default": 3,
-                    },
-                    "open_browser": {
-                        "type": "boolean",
-                        "description": "Open the HTML file in browser to show it to the user (default: false)",
-                        "default": False,
-                    },
-                },
-                "required": ["main_file"],
             },
         ),
         Tool(
@@ -955,124 +815,15 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent | 
         content = target_file.read_text()
         return [TextContent(type="text", text=f"# {sample}/{file}\n\n```python\n{content}\n```")]
     
-    elif name == "capture_sample_screenshot":
-        sample = arguments.get('sample', '')
-        path = arguments.get('path', '/')
-        wait = arguments.get('wait', DEFAULT_WAIT)
-        open_browser = arguments.get('open_browser', False)
-        
-        samples = get_samples()
-        if sample not in samples:
-            return [TextContent(type="text", text=f"Sample '{sample}' not found. Available: {', '.join(samples.keys())}")]
-        
-        sample_path = PACKAGE_DIR / samples[sample]['path']
-        
-        try:
-            png_bytes = await capture_app_screenshot(sample_path, path, wait)
-            b64_data = base64.standard_b64encode(png_bytes).decode('utf-8')
-            
-            # Also save as HTML for clients that can't display images
-            html_path = save_screenshot_html(
-                png_bytes, 
-                f"Sample: {sample}",
-                f"Screenshot of sample '{sample}' at path '{path}'",
-                open_in_browser=open_browser
-            )
-            
-            return [
-                TextContent(type="text", text=f"Screenshot of {sample} at path '{path}':\n\n(HTML saved to: file://{html_path})"),
-                ImageContent(type="image", data=b64_data, mimeType="image/png"),
-            ]
-        except Exception as e:
-            return [TextContent(type="text", text=f"Error capturing screenshot: {e}")]
-    
     elif name == "capture_url_screenshot":
-        url = arguments.get('url', '')
+        url = arguments.get('url', 'http://localhost:8080')
         wait = arguments.get('wait', DEFAULT_WAIT)
-        open_browser = arguments.get('open_browser', False)
-        
-        if not url:
-            return [TextContent(type="text", text="URL is required")]
         
         try:
             png_bytes = await capture_screenshot(url, wait)
             b64_data = base64.standard_b64encode(png_bytes).decode('utf-8')
-            
-            # Also save as HTML for clients that can't display images
-            html_path = save_screenshot_html(
-                png_bytes, 
-                f"Screenshot: {url}",
-                f"Screenshot of {url}",
-                open_in_browser=open_browser
-            )
-            
-            return [
-                TextContent(type="text", text=f"Screenshot of {url}:\n\n(HTML saved to: file://{html_path})"),
-                ImageContent(type="image", data=b64_data, mimeType="image/png"),
-            ]
-        except Exception as e:
-            return [TextContent(type="text", text=f"Error capturing screenshot: {e}")]
-    
-    elif name == "capture_app_screenshot":
-        main_file = arguments.get('main_file', '')
-        path = arguments.get('path', '/')
-        wait = arguments.get('wait', DEFAULT_WAIT)
-        open_browser = arguments.get('open_browser', False)
-        
-        if not main_file:
-            return [TextContent(type="text", text="main_file is required (full path to main.py)")]
-        
-        main_path = Path(main_file)
-        if not main_path.exists():
-            return [TextContent(type="text", text=f"File not found: {main_file}")]
-        
-        if not main_path.name.endswith('.py'):
-            return [TextContent(type="text", text=f"Expected a .py file, got: {main_path.name}")]
-        
-        app_dir = main_path.parent
-        
-        try:
-            # Start the app, capture screenshot, stop it
-            kill_port(PORT)
-            
-            process = subprocess.Popen(
-                [sys.executable, main_path.name],
-                cwd=app_dir,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            
-            try:
-                await asyncio.sleep(2)
-                
-                if process.poll() is not None:
-                    stderr = process.stderr.read().decode() if process.stderr else ''
-                    return [TextContent(type="text", text=f"App failed to start:\n{stderr}")]
-                
-                url = f'http://localhost:{PORT}{path}'
-                png_bytes = await capture_screenshot(url, wait)
-                b64_data = base64.standard_b64encode(png_bytes).decode('utf-8')
-                
-                # Also save as HTML for clients that can't display images
-                html_path = save_screenshot_html(
-                    png_bytes, 
-                    f"App: {main_path.parent.name}",
-                    f"Screenshot of {main_file} at path '{path}'",
-                    open_in_browser=open_browser
-                )
-                
-                return [
-                    TextContent(type="text", text=f"Screenshot of {main_file} at path '{path}':\n\n(HTML saved to: file://{html_path})"),
-                    ImageContent(type="image", data=b64_data, mimeType="image/png"),
-                ]
-            finally:
-                process.terminate()
-                try:
-                    process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                kill_port(PORT)
-                
+
+            return [ImageContent(type="image", data=b64_data, mimeType="image/png")]
         except Exception as e:
             return [TextContent(type="text", text=f"Error capturing screenshot: {e}")]
     
@@ -1283,6 +1034,12 @@ async def list_resources() -> list[Resource]:
 @server.read_resource()
 async def read_resource(uri: str) -> str:
     """Read a resource."""
+    # Be defensive: depending on MCP client/library versions, `uri` may include
+    # surrounding whitespace or arrive wrapped in a dict.
+    if isinstance(uri, dict) and 'uri' in uri:
+        uri = uri['uri']
+    uri = str(uri).strip()
+
     if uri == "nicegui://prompt/optimum":
         prompt_file = PACKAGE_DIR / 'output' / 'nice_vibes.md'
         if prompt_file.exists():

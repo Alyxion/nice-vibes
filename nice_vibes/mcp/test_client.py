@@ -11,7 +11,9 @@ Usage:
 
 import asyncio
 import json
+import shutil
 import sys
+import textwrap
 from pathlib import Path
 
 
@@ -185,7 +187,9 @@ async def interactive_session():
                 tools = await client.list_tools()
                 print(f"\nAvailable tools ({len(tools)}):")
                 for tool in tools:
-                    print(f"  - {tool['name']}: {tool.get('description', '')[:60]}")
+                    name = tool.get('name', '')
+                    desc = (tool.get('description', '') or '').replace('\n', ' ')
+                    print(f"  - {name}: {desc}")
             
             elif command == "resources":
                 resources = await client.list_resources()
@@ -218,7 +222,7 @@ async def interactive_session():
                     is_required = prop_name in required
                     prompt = f"  {prop_name}"
                     if prop_info.get('description'):
-                        prompt += f" ({prop_info['description'][:40]})"
+                        prompt += f" ({prop_info['description']})"
                     if not is_required:
                         prompt += " [optional]"
                     prompt += ": "
@@ -245,11 +249,7 @@ async def interactive_session():
                         for item in content:
                             if item.get('type') == 'text':
                                 text = item.get('text', '')
-                                # Truncate long output
-                                if len(text) > 2000:
-                                    print(text[:2000] + "\n... (truncated)")
-                                else:
-                                    print(text)
+                                print(text)
                             elif item.get('type') == 'image':
                                 print(f"[Image: {item.get('mimeType', 'unknown')} - {len(item.get('data', ''))} bytes base64]")
             
@@ -259,10 +259,7 @@ async def interactive_session():
                     continue
                 
                 content = await client.read_resource(arg)
-                if len(content) > 2000:
-                    print(content[:2000] + "\n... (truncated)")
-                else:
-                    print(content)
+                print(content)
             
             else:
                 print(f"Unknown command: {command}")

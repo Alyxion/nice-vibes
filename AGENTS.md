@@ -1,4 +1,4 @@
-# Nice Prompt - Project Rules
+# Nice Vibes - Project Rules
 
 Rules for AI agents (like Cascade) working on this repository.
 
@@ -8,7 +8,7 @@ This file is **not** part of the master prompt. It governs how to maintain and e
 
 ## Project Overview
 
-This repository contains documentation and examples to help AI agents generate correct NiceGUI code. The main output is `output/nice_prompt.md` - a single file containing all documentation for context injection.
+This repository contains documentation and examples to help AI agents generate correct NiceGUI code. The main output is `output/nice_vibes.md` - a single file containing all documentation for context injection.
 
 ## File Organization
 
@@ -22,15 +22,63 @@ docs/
 │   └── *_references.md     # Source URLs (excluded from master prompt)
 └── prompt_config.yaml      # Controls master prompt build order
 
+nice_vibes/                 # Python package
+├── cli.py                  # Command-line interface (nice-vibes command)
+└── mcp/                    # MCP server for AI assistant integration
+
 samples/                    # Working example applications
 scripts/                    # Build and validation tools
-output/                     # Generated master prompt
+tests/                      # Pytest tests
+output/                     # Generated master prompts (compact/optimum/extended)
 ```
 
+## MCP Server
+
+The optional MCP server (`nice_vibes/mcp/`) provides AI assistants with:
+- Documentation search without loading everything into context
+- NiceGUI component source code inspection
+- Screenshot capture of running applications
+- Sample exploration and copying
+
+See `nice_vibes/mcp/README.md` for setup instructions.
 
 ## Environment
 
 This project is a poetry project. Use `poetry install` to install dependencies.
+
+## Common Commands
+
+```bash
+# Install dependencies
+poetry install
+
+# Run tests
+poetry run pytest -v
+
+# Run a sample application
+poetry run python samples/dashboard/main.py
+
+# Build master prompt (outputs to output/)
+poetry run python scripts/build_master_prompt.py
+
+# Build everything (screenshots, gallery, GIFs, prompts)
+poetry run python scripts/build_all.py
+poetry run python scripts/build_all.py --skip-screenshots
+
+# Validate class references
+poetry run python scripts/validate_classes.py
+poetry run python scripts/validate_classes.py --check-urls
+
+# Generate class reference files
+poetry run python scripts/generate_class_references.py
+
+# Build samples gallery
+poetry run python scripts/build_samples_gallery.py
+
+# Capture screenshots
+poetry run python scripts/capture_screenshots.py
+poetry run python scripts/capture_screenshots.py dashboard
+```
 
 ## Maintenance Rules
 
@@ -122,6 +170,14 @@ poetry run python scripts/build_all.py --skip-screenshots
 
 The master prompt is built from all documentation files in the order specified by `docs/prompt_config.yaml`.
 
+Three variants are generated in `output/`:
+
+| Variant | Tokens | Use Case |
+|---------|--------|----------|
+| **Compact** | ~14K | Quick tasks, simple UI |
+| **Optimum** | ~23K | Most use cases |
+| **Extended** | ~34K | Custom components, deployment |
+
 ### Configuration
 
 Edit `docs/prompt_config.yaml` to control:
@@ -135,7 +191,7 @@ poetry run python scripts/build_master_prompt.py
 ```
 
 Options:
-- `--github-url URL` - Set GitHub URL for source links (default: https://github.com/Alyxion/nice-prompt)
+- `--github-url URL` - Set GitHub URL for source links (default: https://github.com/Alyxion/nice-vibes)
 
 ## Validation
 

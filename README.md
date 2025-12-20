@@ -24,7 +24,7 @@ A comprehensive toolkit of prompts, patterns, and examples that help AI coding a
 - **🔐 Authentication Patterns** - Signed cookie persistence, role-based permissions, login flows
 - **🧭 SPA Navigation** - `ui.sub_pages`, header/drawer visibility, back button handling
 - **🧪 Working Samples** - Full multi-dashboard app, stock analysis, custom components
-- **🤖 AI-Optimized** - Single master prompt (~22K tokens) for context injection
+- **🤖 AI-Optimized** - Single master prompt (~23K tokens) for context injection
 - **✅ Validated** - All class references and URLs verified
 - **🧩 Modular** - Pick what you need or use the full prompt
 
@@ -40,7 +40,11 @@ Just download and use the pre-built master prompt directly:
 | **Optimum** | ~23K | Most use cases | [nice_vibes.md](https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes.md) |
 | **Extended** | ~34K | Custom components, deployment | [nice_vibes_extended.md](https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes_extended.md) |
 
-Copy the content into your AI assistant's context or system prompt. When using tools such as Windsurf use Opus 4.5 as model and paste one of the URLs above to let it "teach itself" the principles of NiceGUI.
+When using tools such as [Windsurf](https://www.windsurf.com/) or [Claude Code](https://claude.ai/code), point it to the master prompt of your choice before providing the task description.
+
+Choose of one the urls above depending on the complexity of the task.
+
+Alternatively, you can add the global and local rules below to your tool of choice to let it fetch the corresponding master prompt automatically.
 
 ### Build From Source (Optional)
 
@@ -95,6 +99,7 @@ Each variant is available in **online** (GitHub URLs) and **offline** (local pat
 | Class reference | ref | ✓ | ✓ |
 | Custom components | ref | ref | ✓ |
 | Configuration & deployment | ref | ref | ✓ |
+| Testing | ✓ | ✓ | ✓ |
 | Sample references | ✓ | ✓ | ✓ |
 
 **ref** = Not included but referenced with summary (AI knows where to look)
@@ -159,6 +164,59 @@ This is how it works:
 </p>
 
 See [nice_vibes/mcp/README.md](nice_vibes/mcp/README.md/) for detailed setup instructions.
+
+## 🧠 Recommended Editor Rules (Windsurf / Claude Code)
+
+Use the snippets below as **Global Rules / Global Instructions** and **Local Rules / Local Instructions**.
+
+### Version A (recommended): MCP-enabled
+
+#### Global (copy/paste)
+
+```text
+When I ask you to build a new Python dashboard or web UI, default to NiceGUI and Poetry (Python 3.12+).
+Assume the app runs on http://localhost:8080. If the nice-vibes MCP server is available, you can refer
+to it for sample apps and initial project setup.
+```
+
+#### Local (copy/paste)
+
+```text
+This repository uses NiceGUI and Poetry.
+
+Rules:
+- Always use `poetry run ...`.
+- Keep NiceGUI on port 8080. If the port is blocked you can kill the process using nice-vibes MCP tools.
+- NiceGUI hot-reloads on file-changes, you do usually not need to restart the server.
+- Do not open a browser automatically.
+- Prefer the nice-vibes MCP tools for docs, samples, and NiceGUI component details.
+- If you want to verify visual impact of your changes you can use the nice-vibes MCP tools to capture screenshots using `capture_url_screenshot` (defaults to http://localhost:8080).
+```
+
+### Version B: No MCP (GitHub markdown only)
+
+#### Global (copy/paste)
+
+```text
+When I ask you to build a new Python dashboard or web UI, default to NiceGUI and Poetry (Python 3.12+).
+For documentation, samples, and NiceGUI component details use the Nice Vibes GitHub markdown prompts.
+They are available in the following variants:
+- https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes_compact.md
+- https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes.md
+- https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes_extended.md
+```
+
+#### Local (copy/paste)
+
+```text
+This repository uses NiceGUI and Poetry.
+
+Rules:
+- Always use `poetry run ...`.
+- Keep NiceGUI on port 8080. Do not open a browser automatically.
+- Use the Nice Vibes GitHub markdown prompts as your primary reference for NiceGUI component details.
+- NiceGUI hot-reloads on file-changes, you do usually not need to restart the server.
+```
 
 ## 🙏 Credits
 

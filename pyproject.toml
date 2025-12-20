@@ -1,6 +1,6 @@
 [project]
 name = "nice-vibes"
-version = "0.1.2"
+version = "0.1.3"
 description = "Developing beautiful NiceGUI applications with AI"
 authors = [
     {name = "Michael Ikemann", email = "michael.ikemann@gmail.com"}
@@ -48,7 +48,6 @@ Issues = "https://github.com/Alyxion/nice-vibes/issues"
 
 [project.scripts]
 nice-vibes = "nice_vibes.cli:main"
-nice-vibes-mcp-test = "nice_vibes.mcp.test_client:main"
 
 [tool.poetry]
 packages = [

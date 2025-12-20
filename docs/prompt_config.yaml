@@ -22,6 +22,8 @@ mechanics:
     summary: "bind_value(), bind_visibility(), two-way binding, BindableProperty, reactive state"
   - file: event_binding.md
     summary: "Event handlers, async handlers, lambda callbacks, handle_event(), throttling"
+  - file: testing.md
+    summary: "Unit testing NiceGUI apps with pytest: nicegui.testing.User fixture, async tests, page registration gotchas"
   - file: styling.md
     summary: "Tailwind CSS classes, .classes(), .style(), .props(), dark mode, ui.colors"
 
