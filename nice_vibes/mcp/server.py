@@ -429,38 +429,55 @@ def capture_screenshot_sync(
     url: str,
     wait_seconds: int = DEFAULT_WAIT,
     width: int = OUTPUT_WIDTH,
+    format: str = 'JPEG',
+    quality: int = 85,
 ) -> bytes:
-    """Capture a screenshot and return as PNG bytes."""
+    """Capture a screenshot and return as image bytes.
+
+    Args:
+        url: URL to capture
+        wait_seconds: Time to wait for page to load
+        width: Output image width
+        format: Image format ('JPEG' or 'PNG')
+        quality: JPEG quality (1-100), ignored for PNG
+    """
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options
     from PIL import Image
-    
+
     options = Options()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument(f'--window-size={SCREENSHOT_WIDTH},{SCREENSHOT_HEIGHT}')
-    
+
     driver = webdriver.Chrome(options=options)
-    
+
     try:
         driver.get(url)
         time.sleep(wait_seconds)
-        
+
         # Capture screenshot
         png_data = driver.get_screenshot_as_png()
-        
+
         # Resize
         img = Image.open(io.BytesIO(png_data))
         ratio = width / img.width
         new_height = int(img.height * ratio)
         img = img.resize((width, new_height), Image.Resampling.LANCZOS)
-        
-        # Convert to PNG bytes
+
+        # Convert to RGB for JPEG (removes alpha channel)
+        if format.upper() == 'JPEG' and img.mode in ('RGBA', 'LA', 'P'):
+            img = img.convert('RGB')
+
+        # Save to bytes
         output = io.BytesIO()
-        img.save(output, format='PNG')
+        save_kwargs = {'format': format.upper()}
+        if format.upper() == 'JPEG':
+            save_kwargs['quality'] = quality
+        img.save(output, **save_kwargs)
         return output.getvalue()
-        
+
     finally:
         driver.quit()
 
@@ -469,15 +486,14 @@ async def capture_screenshot(
     url: str,
     wait_seconds: int = DEFAULT_WAIT,
     width: int = OUTPUT_WIDTH,
+    format: str = 'JPEG',
+    quality: int = 85,
 ) -> bytes:
     """Async wrapper for screenshot capture."""
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
         None,
-        capture_screenshot_sync,
-        url,
-        wait_seconds,
-        width,
+        lambda: capture_screenshot_sync(url, wait_seconds, width, format, quality),
     )
 
 
@@ -485,10 +501,12 @@ async def capture_app_screenshot(
     app_dir: Path,
     path: str = '/',
     wait_seconds: int = DEFAULT_WAIT,
+    format: str = 'JPEG',
+    quality: int = 85,
 ) -> bytes:
     """Start an app, capture screenshot, stop app."""
     kill_port(PORT)
-    
+
     # Start server
     process = subprocess.Popen(
         [sys.executable, 'main.py'],
@@ -496,18 +514,18 @@ async def capture_app_screenshot(
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    
+
     try:
         # Wait for server to start
         await asyncio.sleep(2)
-        
+
         if process.poll() is not None:
             raise RuntimeError("Server failed to start")
-        
+
         # Capture screenshot
         url = f'http://localhost:{PORT}{path}'
-        return await capture_screenshot(url, wait_seconds)
-        
+        return await capture_screenshot(url, wait_seconds, format=format, quality=quality)
+
     finally:
         process.terminate()
         try:
@@ -610,6 +628,19 @@ async def list_tools() -> list[Tool]:
                         "description": "Seconds to wait after page load (default: 3)",
                         "default": 3,
                     },
+                    "format": {
+                        "type": "string",
+                        "description": "Image format: 'JPEG' or 'PNG' (default: JPEG)",
+                        "enum": ["JPEG", "PNG"],
+                        "default": "JPEG",
+                    },
+                    "quality": {
+                        "type": "integer",
+                        "description": "JPEG quality 1-100 (default: 85). Ignored for PNG.",
+                        "default": 85,
+                        "minimum": 1,
+                        "maximum": 100,
+                    },
                 },
             },
         ),
@@ -671,6 +702,31 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {},
+            },
+        ),
+        Tool(
+            name="project_setup",
+            description="Get file and folder creation instructions for setting up a new NiceGUI project. Returns a structured list of folders to create and files with their content. Always uses clean Python package structure. IMPORTANT: Never overwrite existing files - check first before writing.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_name": {
+                        "type": "string",
+                        "description": "Human-readable project name (e.g., 'My Dashboard App')",
+                    },
+                    "project_type": {
+                        "type": "string",
+                        "description": "Project structure: single_page (one page app) or spa (multi-page with ui.sub_pages, layout, components)",
+                        "enum": ["single_page", "spa"],
+                        "default": "single_page",
+                    },
+                    "include_mcp_rules": {
+                        "type": "boolean",
+                        "description": "Include MCP-based editor rules (default: true). Set to false for GitHub markdown-only rules.",
+                        "default": True,
+                    },
+                },
+                "required": ["project_name"],
             },
         ),
         Tool(
@@ -818,12 +874,15 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent | 
     elif name == "capture_url_screenshot":
         url = arguments.get('url', 'http://localhost:8080')
         wait = arguments.get('wait', DEFAULT_WAIT)
-        
-        try:
-            png_bytes = await capture_screenshot(url, wait)
-            b64_data = base64.standard_b64encode(png_bytes).decode('utf-8')
+        format = arguments.get('format', 'JPEG').upper()
+        quality = arguments.get('quality', 85)
 
-            return [ImageContent(type="image", data=b64_data, mimeType="image/png")]
+        try:
+            image_bytes = await capture_screenshot(url, wait, format=format, quality=quality)
+            b64_data = base64.standard_b64encode(image_bytes).decode('utf-8')
+            mime_type = 'image/jpeg' if format == 'JPEG' else 'image/png'
+
+            return [ImageContent(type="image", data=b64_data, mimeType=mime_type)]
         except Exception as e:
             return [TextContent(type="text", text=f"Error capturing screenshot: {e}")]
     
@@ -976,7 +1035,527 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent | 
             content = guide_file.read_text()
             return [TextContent(type="text", text=content)]
         return [TextContent(type="text", text="Project creation guide not found.")]
-    
+
+    elif name == "project_setup":
+        project_name = arguments.get('project_name', 'My NiceGUI App')
+        project_type = arguments.get('project_type', 'single_page')
+        include_mcp = arguments.get('include_mcp_rules', True)
+
+        # Convert to snake_case for package name
+        import re
+        pkg = re.sub(r'[^a-zA-Z0-9]+', '_', project_name.lower()).strip('_')
+
+        # Common rules content
+        mcp_rules = '''- Use nice-vibes MCP tools for docs, samples, and component details
+- Use `capture_url_screenshot` to verify visual changes
+'''
+        no_mcp_rules = '''- Reference Nice Vibes prompts for NiceGUI documentation:
+  - https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes.md
+'''
+        rules_suffix = mcp_rules if include_mcp else no_mcp_rules
+
+        # Build the setup instructions
+        setup = {
+            "project_name": project_name,
+            "project_slug": pkg,
+            "project_type": project_type,
+            "instructions": "Create the folders and files below. NEVER overwrite existing files - skip any file that already exists.",
+            "folders": [pkg],
+            "files": []
+        }
+
+        # Run command depends on structure
+        run_cmd = f"poetry run python -m {pkg}.main"
+
+        # pyproject.toml
+        setup["files"].append({
+            "path": "pyproject.toml",
+            "description": "Poetry project configuration",
+            "content": f'''[tool.poetry]
+name = "{pkg}"
+version = "0.1.0"
+description = "{project_name}"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+nicegui = "^3.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+'''
+        })
+
+        # README.md
+        setup["files"].append({
+            "path": "README.md",
+            "description": "Project readme",
+            "content": f'''# {project_name}
+
+A NiceGUI application.
+
+## Setup
+
+```bash
+poetry install
+{run_cmd}
+```
+
+Then open http://localhost:8080 in your browser.
+'''
+        })
+
+        # .gitignore
+        setup["files"].append({
+            "path": ".gitignore",
+            "description": "Git ignore file",
+            "content": '''# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Poetry
+poetry.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# NiceGUI
+.nicegui/
+'''
+        })
+
+        # CLAUDE.md
+        setup["files"].append({
+            "path": "CLAUDE.md",
+            "description": "Instructions for Claude Code",
+            "content": f'''# CLAUDE.md
+
+This file provides guidance to Claude Code when working with this repository.
+
+## Project Overview
+
+{project_name} - A NiceGUI web application.
+
+## Commands
+
+```bash
+# Install dependencies
+poetry install
+
+# Run the application
+{run_cmd}
+
+# Run tests
+poetry run pytest -v
+```
+
+## Rules
+
+- Always use `poetry run ...` to run commands
+- Keep NiceGUI on port 8080 - if blocked, kill the existing process first
+- NiceGUI hot-reloads on file changes - no need to restart the server
+- Do not open a browser automatically
+{rules_suffix}'''
+        })
+
+        # .windsurf/rules/rules.md
+        setup["folders"].extend([".windsurf", ".windsurf/rules"])
+        setup["files"].append({
+            "path": ".windsurf/rules/rules.md",
+            "description": "Instructions for Windsurf Cascade",
+            "content": f'''# Windsurf Rules
+
+## Project Overview
+
+{project_name} - A NiceGUI web application.
+
+## Commands
+
+```bash
+# Install dependencies
+poetry install
+
+# Run the application
+{run_cmd}
+
+# Run tests (do NOT pipe output)
+poetry run pytest -v
+```
+
+## Rules
+
+- Always use `poetry run ...` to run commands
+- Keep NiceGUI on port 8080 - if blocked, kill the existing process first
+- NiceGUI hot-reloads on file changes - no need to restart the server
+- Do not open a browser automatically
+{rules_suffix}'''
+        })
+
+        # AGENTS.md
+        mcp_section = '''
+## MCP Integration
+
+If the nice-vibes MCP server is available:
+- Use it for NiceGUI documentation, samples, and component details
+- Use `capture_url_screenshot` to verify visual changes at http://localhost:8080
+'''
+        no_mcp_section = '''
+## Documentation
+
+Reference Nice Vibes prompts for NiceGUI documentation:
+- Compact (~14K): https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes_compact.md
+- Optimum (~23K): https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes.md
+- Extended (~34K): https://raw.githubusercontent.com/Alyxion/nice-vibes/refs/heads/main/output/nice_vibes_extended.md
+'''
+        setup["files"].append({
+            "path": "AGENTS.md",
+            "description": "General instructions for AI agents",
+            "content": f'''# {project_name} - Project Rules
+
+Rules for AI agents working on this repository.
+
+## Environment
+
+This is a Poetry project using NiceGUI.
+
+## Commands
+
+```bash
+# Install dependencies
+poetry install
+
+# Run the application
+{run_cmd}
+
+# Run tests (do NOT pipe output)
+poetry run pytest -v
+```
+
+## Rules
+
+- Always use `poetry run ...` to run commands
+- Keep NiceGUI on port 8080 - if blocked, kill the existing process first
+- NiceGUI hot-reloads on file changes - no need to restart the server
+- Do not open a browser automatically
+{mcp_section if include_mcp else no_mcp_section}'''
+        })
+
+        # === Project type specific files ===
+
+        if project_type == "single_page":
+            # Simple single-page app
+            setup["files"].append({
+                "path": f"{pkg}/__init__.py",
+                "description": "Package init",
+                "content": f'"""{project_name} package."""\n'
+            })
+
+            setup["files"].append({
+                "path": f"{pkg}/main.py",
+                "description": "Application entry point",
+                "content": f'''"""{project_name} - A NiceGUI application."""
+
+from dataclasses import dataclass
+
+from nicegui import ui
+
+
+@dataclass
+class AppState:
+    """Application state."""
+    value: str = ''
+
+
+@ui.page('/')
+def index():
+    state = AppState()
+
+    with ui.header().classes('bg-primary'):
+        ui.label('{project_name}').classes('text-xl font-bold')
+
+    with ui.card().classes('max-w-md mx-auto mt-8 p-6'):
+        ui.input('Enter something').bind_value(state, 'value')
+        ui.label().bind_text_from(state, 'value', lambda v: f'You entered: {{v}}')
+
+
+if __name__ in {{'__main__', '__mp_main__'}}:
+    ui.run(title='{project_name}', show=False)
+'''
+            })
+
+        elif project_type == "spa":
+            # SPA with layout, pages, components, static (following multi_dashboard patterns)
+            setup["folders"].extend([
+                f"{pkg}/pages",
+                f"{pkg}/pages/home",
+                f"{pkg}/pages/settings",
+                f"{pkg}/components",
+                f"{pkg}/static",
+                f"{pkg}/static/css",
+                f"{pkg}/static/js",
+            ])
+
+            setup["files"].append({
+                "path": f"{pkg}/__init__.py",
+                "description": "Package init",
+                "content": f'"""{project_name} package."""\n'
+            })
+
+            setup["files"].append({
+                "path": f"{pkg}/main.py",
+                "description": "Application entry point",
+                "content": f'''"""{project_name} - A NiceGUI SPA application.
+
+Uses root page + ui.sub_pages for SPA-style navigation with persistent state.
+"""
+from pathlib import Path
+
+from nicegui import app, ui
+
+from .layout import AppLayout
+
+# Static files
+STATIC_DIR = Path(__file__).parent / 'static'
+PAGES_DIR = Path(__file__).parent / 'pages'
+
+app.add_static_files('/static', STATIC_DIR)
+
+# Discover pages at startup
+AppLayout.discover_pages(str(PAGES_DIR))
+
+
+async def root():
+    """Root page entry point."""
+    await AppLayout.current().build()
+
+
+if __name__ in {{'__main__', '__mp_main__'}}:
+    ui.run(
+        root,
+        show=False,
+        title='{project_name}',
+        reload=True,
+        uvicorn_reload_includes='*.py,*.js,*.css',
+    )
+'''
+            })
+
+            setup["files"].append({
+                "path": f"{pkg}/layout.py",
+                "description": "App layout with header, drawer, and sub_pages routing",
+                "content": f'''"""Application layout with navigation."""
+import importlib
+from pathlib import Path
+
+from nicegui import app, ui
+
+
+class AppLayout:
+    """Application layout managing header, drawer, and page routing."""
+
+    # Class-level page registry (populated once at startup)
+    _pages: list[dict] = None
+
+    def __init__(self):
+        self.header: ui.header = None
+        self.drawer: ui.left_drawer = None
+
+    @classmethod
+    def current(cls) -> 'AppLayout':
+        """Get or create the layout for this client."""
+        if 'layout' not in app.storage.client:
+            app.storage.client['layout'] = cls()
+        return app.storage.client['layout']
+
+    @classmethod
+    def discover_pages(cls, package_path: str, exclude: set[str] = None) -> list[dict]:
+        """Auto-discover page classes with PAGE = {{'path': '...', 'label': '...', 'icon': '...'}} attribute."""
+        exclude = exclude or set()
+        is_page = lambda obj: isinstance(obj, type) and isinstance(getattr(obj, 'PAGE', None), dict)
+        pages = []
+        for item in Path(package_path).iterdir():
+            if item.is_dir() and item.name not in exclude and (item / '__init__.py').exists():
+                module = importlib.import_module(f'{pkg}.pages.{{item.name}}')
+                for name in dir(module):
+                    obj = getattr(module, name)
+                    if is_page(obj):
+                        pages.append({{**obj.PAGE, 'page_class': obj}})
+        cls._pages = sorted(pages, key=lambda p: (p['path'] != '/', p['path']))
+        return cls._pages
+
+    @classmethod
+    def pages(cls) -> list[dict]:
+        """Get all discovered pages."""
+        return cls._pages or []
+
+    def make_page_builder(self, page_info: dict):
+        """Create an async builder for a page."""
+        async def builder():
+            await page_info['page_class']().build()
+        return builder
+
+    async def build(self) -> None:
+        """Build the complete layout."""
+        ui.add_head_html('<link rel="stylesheet" href="/static/css/app.css">')
+
+        # Header
+        self.header = ui.header().classes('bg-primary items-center')
+        with self.header:
+            ui.button(icon='menu', on_click=lambda: self.drawer.toggle()).props('flat round color=white')
+            ui.label('{project_name}').classes('text-xl text-white ml-2')
+            ui.space()
+            dark = ui.dark_mode()
+            ui.button(icon='dark_mode', on_click=lambda: setattr(dark, 'value', not dark.value)).props('flat round color=white')
+
+        # Navigation Drawer
+        self.drawer = ui.left_drawer(value=True).classes('bg-slate-50 dark:bg-slate-800')
+        with self.drawer:
+            ui.label('Navigation').classes('text-lg font-bold p-4')
+            with ui.list().classes('w-full'):
+                for page in self.pages():
+                    with ui.item(on_click=lambda p=page['path']: ui.navigate.to(p)).classes('rounded-lg mx-2'):
+                        with ui.item_section().props('avatar'):
+                            ui.icon(page['icon']).classes('text-indigo-500')
+                        with ui.item_section():
+                            ui.item_label(page['label'])
+
+        # Page content via sub_pages
+        with ui.column().classes('w-full h-full p-0'):
+            ui.sub_pages({{page['path']: self.make_page_builder(page) for page in self.pages()}})
+'''
+            })
+
+            # Pages
+            setup["files"].append({
+                "path": f"{pkg}/pages/__init__.py",
+                "description": "Pages package",
+                "content": '"""Page modules."""\n'
+            })
+
+            setup["files"].append({
+                "path": f"{pkg}/pages/home/__init__.py",
+                "description": "Home page module",
+                "content": 'from .home import HomePage\n\n__all__ = ["HomePage"]\n'
+            })
+
+            setup["files"].append({
+                "path": f"{pkg}/pages/home/home.py",
+                "description": "Home page implementation with async build",
+                "content": '''"""Home page."""
+from nicegui import ui
+
+
+class HomePage:
+    """Home page - the default landing page."""
+    PAGE = {'path': '/', 'label': 'Home', 'icon': 'home'}
+
+    async def build(self) -> None:
+        """Build the page content."""
+        with ui.column().classes('w-full p-6'):
+            with ui.row().classes('items-center mb-4'):
+                ui.icon('home').classes('text-3xl text-indigo-500')
+                ui.label('Welcome').classes('text-2xl font-bold ml-2')
+
+            with ui.card().classes('w-full max-w-2xl'):
+                ui.label('This is the home page of your SPA application.')
+                ui.label('Navigate using the drawer on the left.')
+'''
+            })
+
+            setup["files"].append({
+                "path": f"{pkg}/pages/settings/__init__.py",
+                "description": "Settings page module",
+                "content": 'from .settings import SettingsPage\n\n__all__ = ["SettingsPage"]\n'
+            })
+
+            setup["files"].append({
+                "path": f"{pkg}/pages/settings/settings.py",
+                "description": "Settings page implementation with async build",
+                "content": '''"""Settings page."""
+from nicegui import ui
+
+
+class SettingsPage:
+    """Settings page for application configuration."""
+    PAGE = {'path': '/settings', 'label': 'Settings', 'icon': 'settings'}
+
+    async def build(self) -> None:
+        """Build the page content."""
+        with ui.column().classes('w-full p-6'):
+            with ui.row().classes('items-center mb-4'):
+                ui.icon('settings').classes('text-3xl text-indigo-500')
+                ui.label('Settings').classes('text-2xl font-bold ml-2')
+
+            with ui.card().classes('w-full max-w-2xl'):
+                ui.label('Application Settings').classes('font-semibold mb-4')
+                ui.switch('Enable notifications')
+                ui.switch('Dark mode by default')
+'''
+            })
+
+            # Components
+            setup["files"].append({
+                "path": f"{pkg}/components/__init__.py",
+                "description": "Reusable components package",
+                "content": '"""Reusable UI components."""\n'
+            })
+
+            # Static files
+            setup["files"].append({
+                "path": f"{pkg}/static/css/app.css",
+                "description": "Custom CSS styles",
+                "content": '''/* Custom styles for the application */
+
+.nav-drawer {
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark .nav-drawer {
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+'''
+            })
+
+            setup["files"].append({
+                "path": f"{pkg}/static/js/app.js",
+                "description": "Custom JavaScript",
+                "content": '''// Custom JavaScript for the application
+'''
+            })
+
+        import json
+        return [TextContent(type="text", text=json.dumps(setup, indent=2))]
+
     elif name == "kill_port_8080":
         try:
             result = subprocess.run(

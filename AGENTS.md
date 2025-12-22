@@ -1,4 +1,4 @@
-# Nice Vibes - Project Rules
+# NiceVibes - Project Rules
 
 Rules for AI agents (like Cascade) working on this repository.
 
@@ -32,13 +32,19 @@ tests/                      # Pytest tests
 output/                     # Generated master prompts (compact/optimum/extended)
 ```
 
+**Generated files (DO NOT EDIT directly):**
+- `README.md` - generated from `docs/README_template.md` via `scripts/build_readme.py`
+- `README_PYPI.md` - generated from template via `scripts/build_pypi_readme.py`
+- `samples/README.md` - generated from `samples/README_template.md` via `scripts/build_samples_gallery.py`
+
 ## MCP Server
 
 The optional MCP server (`nice_vibes/mcp/`) provides AI assistants with:
 - Documentation search without loading everything into context
 - NiceGUI component source code inspection
-- Screenshot capture of running applications
+- Screenshot capture of running applications (JPEG/PNG with quality options)
 - Sample exploration and copying
+- Project setup with `single_page` and `spa` templates
 
 See `nice_vibes/mcp/README.md` for setup instructions.
 
@@ -52,7 +58,7 @@ This project is a poetry project. Use `poetry install` to install dependencies.
 # Install dependencies
 poetry install
 
-# Run tests
+# Run tests (do NOT pipe output - we need to see results)
 poetry run pytest -v
 
 # Run a sample application
@@ -72,12 +78,18 @@ poetry run python scripts/validate_classes.py --check-urls
 # Generate class reference files
 poetry run python scripts/generate_class_references.py
 
-# Build samples gallery
+# Build samples gallery (uses samples/README_template.md)
 poetry run python scripts/build_samples_gallery.py
 
 # Capture screenshots
 poetry run python scripts/capture_screenshots.py
 poetry run python scripts/capture_screenshots.py dashboard
+
+# Verify project templates create working applications (includes screenshot capture)
+poetry run python scripts/verify_project_templates.py
+poetry run python scripts/verify_project_templates.py --type spa
+poetry run python scripts/verify_project_templates.py --keep  # Keep temp dirs for inspection
+poetry run python scripts/verify_project_templates.py --no-screenshot  # Skip screenshots (faster)
 ```
 
 ## Maintenance Rules
@@ -302,6 +314,41 @@ with container:
 ```
 
 Or use `@ui.refreshable` for simpler cases.
+
+## Deployment
+
+### Version Bump
+
+Update version in `pyproject.toml` before releasing.
+
+### Build and Test Workflow
+
+```bash
+# 1. Run tests
+poetry run pytest -v
+
+# 2. Verify project templates work
+poetry run python scripts/verify_project_templates.py
+
+# 3. Build the wheel
+./scripts/build.sh              # Quick build
+./scripts/build.sh --full       # Rebuild READMEs and prompts first
+
+# 4. Test the wheel in isolated environment
+./scripts/test_wheel.sh
+
+# 5. Deploy to PyPI
+./scripts/deploy_pypi.sh        # Production
+./scripts/deploy_pypi.sh --test # TestPyPI first (recommended)
+```
+
+### What the Scripts Do
+
+- **`build.sh`** - Cleans dist/, builds wheel with `poetry build`
+- **`build.sh --full`** - Also rebuilds README.md and master prompts
+- **`test_wheel.sh`** - Creates temp venv, installs wheel, runs smoke tests (CLI, imports)
+- **`deploy_pypi.sh`** - Publishes to PyPI (requires PYPI_TOKEN)
+- **`deploy_pypi.sh --test`** - Publishes to TestPyPI first
 
 ## Rule Placement
 

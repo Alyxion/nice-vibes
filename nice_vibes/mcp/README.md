@@ -6,10 +6,10 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
 
 While the static prompts work great for most tasks, the MCP server provides **dynamic, on-demand access** to:
 
-- **Guided Project Creation** - Step-by-step questionnaire to create new NiceGUI projects with best practices
+- **Project Setup** - Generate complete project structures (`single_page` or `spa`) with all files, editor rules, and best practices
 - **Documentation Search** - Find relevant topics without loading everything into context
 - **Source Code Inspection** - Read NiceGUI component source code directly from the installed package
-- **Visual Debugging** - Capture screenshots of running or newly created applications
+- **Visual Debugging** - Capture screenshots (JPEG/PNG) of running applications
 - **Sample Exploration** - Browse and copy working sample applications
 
 ## Capabilities
@@ -34,13 +34,11 @@ While the static prompts work great for most tasks, the MCP server provides **dy
 
 | Tool | Purpose |
 |------|---------|
-| `capture_url_screenshot` | Capture a screenshot of a running NiceGUI app at any URL. Also saves HTML to disk. |
-| `capture_app_screenshot` | Start an app from a main.py file, capture screenshot, then stop it - perfect for previewing newly created projects. Also saves HTML to disk. |
-| `capture_sample_screenshot` | Start a sample application, capture its screenshot, then stop it. Also saves HTML to disk. |
+| `capture_url_screenshot` | Capture a screenshot of any URL (default: localhost:8080). Supports `format` (JPEG/PNG) and `quality` (1-100) options. |
 | `kill_port_8080` | Kill any process on port 8080 - useful when restarting apps |
 | `open_browser` | Open a URL in the user's default browser (default: http://localhost:8080) |
 
-**Note:** Screenshots are captured at Full HD resolution (1920x1080). An HTML file is saved to disk with the path included in the response - use `open_browser` with the `file://` URL if the user wants to view it.
+**Note:** Screenshots default to JPEG at 85% quality to reduce file size. Use `format: "PNG"` for lossless quality when needed.
 
 ### 📦 Sample Applications
 
@@ -53,13 +51,16 @@ While the static prompts work great for most tasks, the MCP server provides **dy
 
 | Tool | Purpose |
 |------|---------|
+| `project_setup` | Generate complete project structure with all files and folders. Returns JSON with paths and content - never overwrites existing files. Supports `single_page` and `spa` project types. |
 | `get_project_creation_guide` | Get the guided questionnaire and rules for creating new NiceGUI projects |
 
 **Project creation workflow:**
-1. Preview design with `capture_app_screenshot` before running the server
-2. Use `poetry run python main.py` to start (always use `poetry run` in Poetry environments)
-3. Code changes are automatically hot-reloaded - no restart needed
-4. Never open browser without asking the user first
+1. Use `project_setup` to get file/folder structure for new projects
+2. Create files from the returned JSON (check for existing files first)
+3. Run `poetry install` to install dependencies
+4. Use `poetry run python -m {package}.main` to start the app
+5. Use `capture_url_screenshot` to verify the UI renders correctly
+6. Code changes are automatically hot-reloaded - no restart needed
 
 ## Setup
 

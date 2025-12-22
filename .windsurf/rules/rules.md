@@ -1,3 +1,6 @@
+---
+trigger: always_on
+---
 # Windsurf Rules
 
 See [AGENTS.md](../../AGENTS.md) for complete project rules, commands, and conventions.
