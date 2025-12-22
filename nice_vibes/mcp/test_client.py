@@ -31,13 +31,15 @@ class MCPTestClient:
         python = sys.executable
         server_module = "nice_vibes.mcp"
         cwd = Path(__file__).parent.parent.parent
-        
+
+        # Use a large buffer limit (50MB) to handle base64-encoded screenshots
         self.process = await asyncio.create_subprocess_exec(
             python, "-m", server_module,
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             cwd=cwd,
+            limit=50 * 1024 * 1024,  # 50MB buffer for large responses
         )
         
         # Start reading stderr in background (for server logs)
