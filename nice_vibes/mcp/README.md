@@ -137,6 +137,28 @@ Here's an example configuration combining nice-vibes with other popular MCP serv
 
 Restart your AI assistant to load the new MCP server.
 
+## Configuration
+
+### Disabling Individual Tools
+
+You can disable specific tools by setting the `NICE_VIBES_DISABLE_TOOLS` environment variable to a comma-separated list of tool names:
+
+```json
+{
+  "mcpServers": {
+    "nice-vibes": {
+      "command": "/path/to/python",
+      "args": ["-m", "nice_vibes.mcp"],
+      "env": {
+        "NICE_VIBES_DISABLE_TOOLS": "kill_port_8080,open_browser"
+      }
+    }
+  }
+}
+```
+
+Disabled tools are excluded from the tool list entirely, so they won't consume context tokens. Available tool names: `list_topics`, `get_topic`, `search_topics`, `get_component_info`, `get_component_source`, `get_component_docs`, `list_samples`, `get_sample_source`, `get_project_creation_guide`, `project_setup`, `capture_url_screenshot`, `kill_port_8080`, `open_browser`.
+
 ## Usage Examples
 
 Once configured, your AI assistant can use these tools naturally:

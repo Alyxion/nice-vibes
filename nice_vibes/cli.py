@@ -12,6 +12,7 @@ Usage:
     nice-vibes copy <sample>     # Alias: nice-vibes samples copy <sample>
     nice-vibes mcp-config        # Print MCP server configuration
     nice-vibes mcp-test          # Interactive MCP server test client
+    nice-vibes debug <app>       # Run any NiceGUI app with debug bridge injected
 """
 
 import argparse
@@ -91,7 +92,7 @@ def kill_port_8080() -> bool:
     """
     try:
         result = subprocess.run(
-            ['lsof', '-ti', 'tcp:8080'],
+            ['lsof', '-ti', 'tcp:8080', '-sTCP:LISTEN'],
             capture_output=True,
             text=True,
         )
@@ -627,13 +628,54 @@ def run_mcp_test() -> int:
     """Run the interactive MCP server test client."""
     import asyncio
     from nice_vibes.mcp.test_client import interactive_session
-    
+
     try:
         asyncio.run(interactive_session())
         return 0
     except KeyboardInterrupt:
         print("\nStopped.")
         return 0
+
+
+def run_debug(target: str, extra_args: list[str] | None = None) -> int:
+    """Run any NiceGUI app with debug bridge auto-injected.
+
+    :param target: Module name or file path to run
+    :param extra_args: Additional arguments to pass to the app
+    :return: Exit code
+    """
+    import runpy
+
+    # Enable debug mode
+    os.environ['DEBUG_MODE'] = '1'
+
+    # Patch ui.page BEFORE importing target
+    import nice_vibes.debug.auto  # noqa: F401
+
+    print(f"Running {target} with debug bridge enabled...")
+    print("Debug viewer: http://localhost:8089")
+    print()
+
+    # Adjust sys.argv
+    original_argv = sys.argv.copy()
+    sys.argv = [target] + (extra_args or [])
+
+    try:
+        if target.endswith('.py'):
+            # Run as file
+            runpy.run_path(target, run_name='__main__')
+        else:
+            # Run as module
+            runpy.run_module(target, run_name='__main__', alter_sys=True)
+        return 0
+    except KeyboardInterrupt:
+        print("\nStopped.")
+        return 0
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
+    finally:
+        sys.argv = original_argv
 
 
 def print_mcp_config() -> int:
@@ -758,6 +800,11 @@ def main() -> int:
 
         # Utility command
         subparsers.add_parser('kill-8080', help='Kill any process listening on TCP port 8080')
+
+        # Debug command
+        debug_parser = subparsers.add_parser('debug', help='Run any NiceGUI app with debug bridge injected')
+        debug_parser.add_argument('target', help='Module or file to run (e.g., myapp.main or path/to/main.py)')
+        debug_parser.add_argument('args', nargs='*', help='Additional arguments to pass to the app')
         
         args = parser.parse_args()
         
@@ -790,6 +837,8 @@ def main() -> int:
                 return 0
             print('No process found on port 8080 (or missing lsof)')
             return 0
+        elif args.command == 'debug':
+            return run_debug(args.target, args.args)
         else:
             # No command - show main menu
             while True:

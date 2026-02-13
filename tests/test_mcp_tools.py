@@ -210,6 +210,24 @@ async def test_mcp_project_setup_without_mcp(mcp_client: MCPTestClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_mcp_disable_tools_via_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """NICE_VIBES_DISABLE_TOOLS should hide listed tools from the tool list."""
+    monkeypatch.setenv("NICE_VIBES_DISABLE_TOOLS", "kill_port_8080,open_browser")
+    client = MCPTestClient()
+    await client.start()
+    try:
+        tools = await client.list_tools()
+        names = {t.get('name') for t in tools}
+        assert 'kill_port_8080' not in names, 'kill_port_8080 should be disabled'
+        assert 'open_browser' not in names, 'open_browser should be disabled'
+        # Spot-check that other tools are still present
+        assert 'list_topics' in names
+        assert 'get_topic' in names
+    finally:
+        await client.stop()
+
+
+@pytest.mark.asyncio
 async def test_mcp_destructive_tools_are_skipped_by_default(mcp_client: MCPTestClient) -> None:
     # These tools can have side-effects (killing processes, opening browser) or require heavy deps.
     # Keep them opt-in to make CI/dev runs reliable.

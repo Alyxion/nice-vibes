@@ -1,6 +1,6 @@
 [project]
 name = "nice-vibes"
-version = "0.1.4"
+version = "0.1.5"
 description = "Developing beautiful NiceGUI applications with AI"
 authors = [
     {name = "Michael Ikemann", email = "michael.ikemann@gmail.com"}

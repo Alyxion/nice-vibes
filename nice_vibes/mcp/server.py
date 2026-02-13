@@ -15,6 +15,7 @@ import asyncio
 import base64
 import inspect
 import io
+import os
 import subprocess
 import sys
 import time
@@ -539,10 +540,17 @@ async def capture_app_screenshot(
 # MCP Tool Handlers
 # ============================================================================
 
+def _disabled_tools() -> set[str]:
+    """Return set of tool names disabled via NICE_VIBES_DISABLE_TOOLS env var (comma-separated)."""
+    raw = os.environ.get("NICE_VIBES_DISABLE_TOOLS", "")
+    return {t.strip() for t in raw.split(",") if t.strip()}
+
+
 @server.list_tools()
 async def list_tools() -> list[Tool]:
     """List available tools."""
-    return [
+    disabled = _disabled_tools()
+    all_tools = [
         Tool(
             name="list_topics",
             description="List all available NiceGUI documentation topics with summaries. Use this to discover what documentation is available.",
@@ -752,6 +760,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
     ]
+    return [t for t in all_tools if t.name not in disabled]
 
 
 @server.call_tool()
@@ -1559,7 +1568,7 @@ class SettingsPage:
     elif name == "kill_port_8080":
         try:
             result = subprocess.run(
-                'lsof -ti:8080 | xargs kill -9',
+                "lsof -ti:8080 -sTCP:LISTEN | xargs kill -9",
                 shell=True,
                 capture_output=True,
                 text=True
@@ -1578,7 +1587,7 @@ class SettingsPage:
             return [TextContent(type="text", text=f"Opened {url} in the default browser.")]
         except Exception as e:
             return [TextContent(type="text", text=f"Error opening browser: {e}")]
-    
+
     return [TextContent(type="text", text=f"Unknown tool: {name}")]
 
 
