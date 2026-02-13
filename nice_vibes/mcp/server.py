@@ -1567,16 +1567,14 @@ class SettingsPage:
 
     elif name == "kill_port_8080":
         try:
-            result = subprocess.run(
-                "lsof -ti:8080 -sTCP:LISTEN | xargs kill -9",
-                shell=True,
-                capture_output=True,
-                text=True
-            )
-            if result.returncode == 0:
-                return [TextContent(type="text", text="Killed process on port 8080. Port is now free.")]
-            else:
+            check = subprocess.run(['lsof', '-ti', ':8080', '-sTCP:LISTEN'], capture_output=True, text=True)
+            pids = check.stdout.strip()
+            if not pids:
                 return [TextContent(type="text", text="No process found on port 8080. Port is already free.")]
+            for pid in pids.split('\n'):
+                subprocess.run(['kill', '-9', pid.strip()], capture_output=True)
+            time.sleep(0.5)
+            return [TextContent(type="text", text=f"Killed process on port 8080 (PID {pids.replace(chr(10), ', ')}). Port is now free.")]
         except Exception as e:
             return [TextContent(type="text", text=f"Error killing process: {e}")]
     
