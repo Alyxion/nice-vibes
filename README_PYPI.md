@@ -8,12 +8,12 @@
 
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12+-blue.svg" alt="Python 3.12+"></a>
-  <a href="https://nicegui.io/"><img src="https://img.shields.io/badge/NiceGUI-3.3+-green.svg" alt="NiceGUI"></a>
+  <a href="https://nicegui.io/"><img src="https://img.shields.io/pypi/v/nicegui?label=NiceGUI&color=green" alt="NiceGUI"></a>
   <a href="https://github.com/Alyxion/nice-vibes/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Alyxion/nice-vibes/main/samples/showcase.gif" alt="Sample Applications" width="600">
+  <img src="https://raw.githubusercontent.com/Alyxion/nice-vibes/main/samples/showcase.gif" alt="Sample Applications">
 </p>
 
 A comprehensive toolkit of prompts, patterns, and examples that help AI coding assistants generate correct, idiomatic [NiceGUI](https://nicegui.io/) code.

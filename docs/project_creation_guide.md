@@ -115,14 +115,14 @@ package-mode = false  # IMPORTANT: Prevents "Readme path does not exist" errors
 
 [tool.poetry.dependencies]
 python = "^3.12"
-nicegui = "^3.3.1"
+nicegui = "*"  # prefer `poetry add nicegui` to track the latest release; do not hand-edit
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 ```
 
-Always use the newest NiceGUI version, currently 3.3.1 or above via `poetry add nicegui`.
+Always use the newest NiceGUI version via `poetry add nicegui` (which resolves to the latest release on PyPI). Do not pin to an older version unless a specific constraint forces it.
 
 **The following files should be created BEFORE `poetry install`:**
 1. `README.md` - Required by Poetry (even a one-liner is fine)
