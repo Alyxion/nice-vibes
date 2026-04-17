@@ -1,0 +1,57 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
+
+      - name: Run pytest
+        run: poetry run pytest -v
+
+      - name: Validate class references exist in installed NiceGUI
+        # Catches authoring typos (e.g. ui.buton). Semver protects renames
+        # within 3.x, so this rarely fires on a NiceGUI release, but it's
+        # still useful as a PR gate.
+        run: poetry run python scripts/validate_classes.py
+
+      - name: Regenerate class reference tables and fail on drift
+        # `_references.md` contains source file paths + doc URLs per class.
+        # If NiceGUI refactors internals (moves files), these should update
+        # and be committed. Failing the job surfaces that in the PR.
+        run: |
+          poetry run python scripts/generate_class_references.py
+          if ! git diff --quiet docs/classes/; then
+            echo "::error ::docs/classes/*_references.md drifted from installed NiceGUI. Run scripts/generate_class_references.py locally and commit."
+            git diff docs/classes/
+            exit 1
+          fi
+
+      - name: Rebuild master prompts and fail on drift
+        # build_master_prompt.py is a pure concatenator of docs/ + config.
+        # If docs/ was edited, output/*.md must be rebuilt and committed.
+        run: |
+          poetry run python scripts/build_master_prompt.py
+          if ! git diff --quiet output/; then
+            echo "::error ::output/*.md drifted from docs/ sources. Run scripts/build_master_prompt.py locally and commit."
+            git diff output/
+            exit 1
+          fi
