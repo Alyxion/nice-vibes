@@ -31,7 +31,7 @@ poetry init
 poetry add nicegui
 ```
 
-Always use the newest NiceGUI version, currently 3.3.1 or above via `poetry add nicegui`.
+Always use the newest NiceGUI version via `poetry add nicegui` (which resolves to the latest release on PyPI). Do not pin to an older version unless a specific constraint forces it.
 
 **Basic Poetry project structure:**
 
@@ -308,7 +308,7 @@ packages = [{include = "my_app"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-nicegui = "^3.3"
+nicegui = "*"  # prefer `poetry add nicegui` to track the latest release; do not hand-edit
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"

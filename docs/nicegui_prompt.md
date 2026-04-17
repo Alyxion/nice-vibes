@@ -22,7 +22,7 @@ poetry init
 poetry add nicegui
 ```
 
-Always use the newest NiceGUI version, currently 3.3.1 or above via `poetry add nicegui`.
+Always use the newest NiceGUI version via `poetry add nicegui` (which resolves to the latest release on PyPI). Do not pin to an older version unless a specific constraint forces it.
 
 **Basic Poetry project structure:**
 

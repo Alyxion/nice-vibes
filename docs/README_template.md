@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12+-blue.svg" alt="Python 3.12+"></a>
-  <a href="https://nicegui.io/"><img src="https://img.shields.io/badge/NiceGUI-3.3+-green.svg" alt="NiceGUI"></a>
+  <a href="https://nicegui.io/"><img src="https://img.shields.io/pypi/v/nicegui?label=NiceGUI&color=green" alt="NiceGUI"></a>
   <a href="{{GITHUB_PREFIX}}LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 </p>
 
